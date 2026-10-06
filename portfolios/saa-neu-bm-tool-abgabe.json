@@ -1,0 +1,20 @@
+{
+  "name": "SAA neu (BM-Tool Abgabe)",
+  "weights": {
+    "Anleihen EURO": 0.29,
+    "Anleihen HTM": 0.35,
+    "Geldmarkt": 0.0,
+    "Anleihen Welt": 0.03,
+    "Wandelanleihen (EUR hedged)": 0.04,
+    "Rohstoffe": 0.0,
+    "Aktien Welt": 0.08,
+    "Aktien Europa (EUR hedged)": 0.05,
+    "Aktien EM": 0.02,
+    "Alternative Investments": 0.03,
+    "Mikrofinanz": 0.02,
+    "Immobilien": 0.09
+  },
+  "benchmarks": {},
+  "ter": 0.0109,
+  "notes": "Die SAA aus BM-Tool!D4:D18 der abgegebenen Excel-Datei, TER 1,09 % p.a. (Median VK OeKB aus TER_PK). Reproduziert die Excel-Kennzahlen exakt - siehe tests/test_against_excel.py."
+}

@@ -1,0 +1,20 @@
+{
+  "name": "VG 3 TAA (Stand Abgabe)",
+  "weights": {
+    "Anleihen EURO": 0.3469,
+    "Anleihen HTM": 0.2759,
+    "Geldmarkt": 0.021,
+    "Anleihen Welt": 0.0269,
+    "Wandelanleihen (EUR hedged)": 0.0461,
+    "Rohstoffe": 0.0,
+    "Aktien Welt": 0.0765,
+    "Aktien Europa (EUR hedged)": 0.0362,
+    "Aktien EM": 0.0204,
+    "Alternative Investments": 0.0482,
+    "Mikrofinanz": 0.0054,
+    "Immobilien": 0.0965
+  },
+  "benchmarks": {},
+  "ter": 0.0109,
+  "notes": "Die TAA-Spalte für VG 3 aus dem Bewegungsmonitor (Spalte L) zum Abgabestand, als Vergleichsszenario zur SAA."
+}

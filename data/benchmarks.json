@@ -1,0 +1,308 @@
+{
+  "BCEX6T Index": {
+    "currency": "EUR",
+    "description": "BCEX6T",
+    "first_month": "1999-01",
+    "last_month": "2026-03",
+    "months": 327,
+    "name": "BCEX6T Index",
+    "source_column": "W"
+  },
+  "BCOMDET Index": {
+    "currency": "EUR",
+    "description": "BBG HedgD EURT",
+    "first_month": "2001-05",
+    "last_month": "2026-03",
+    "months": 299,
+    "name": "BCOMDET Index",
+    "source_column": "AW"
+  },
+  "BCOMTR Index": {
+    "currency": "USD",
+    "description": "BBG Commodity TR",
+    "first_month": "1960-02",
+    "last_month": "2026-03",
+    "months": 794,
+    "name": "BCOMTR Index",
+    "source_column": "AK"
+  },
+  "BEHLTREU Index": {
+    "currency": "EUR",
+    "description": "Liquity Screened Euro HY",
+    "first_month": "2004-08",
+    "last_month": "2026-03",
+    "months": 260,
+    "name": "BEHLTREU Index",
+    "source_column": "AG"
+  },
+  "CPBRLET AV Equity": {
+    "currency": "EUR",
+    "description": "SEMPERREAL ESTATE - T",
+    "first_month": "2004-09",
+    "last_month": "2026-03",
+    "months": 259,
+    "name": "CPBRLET AV Equity",
+    "source_column": "AM"
+  },
+  "Convertibles Index EUR": {
+    "currency": "EUR",
+    "description": "T&R Global Convertibles hedged",
+    "first_month": "1993-12",
+    "last_month": "2026-03",
+    "months": 388,
+    "name": "Convertibles Index EUR",
+    "source_column": "BK"
+  },
+  "DBDCONIA Index": {
+    "currency": "EUR",
+    "description": "EONIA Total Return Index",
+    "first_month": "1999-01",
+    "last_month": "2026-03",
+    "months": 327,
+    "name": "DBDCONIA Index",
+    "source_column": "BI"
+  },
+  "ECC0TR03 Index": {
+    "currency": "EUR",
+    "description": "Euro Cash Indices LIBOR Total",
+    "first_month": "1996-01",
+    "last_month": "2026-01",
+    "months": 361,
+    "name": "ECC0TR03 Index",
+    "source_column": "I"
+  },
+  "ESTR3MA Index (+ 100BP)": {
+    "currency": "EUR",
+    "description": "Euribor 3M",
+    "first_month": "2001-01",
+    "last_month": "2026-01",
+    "months": 301,
+    "name": "ESTR3MA Index (+ 100BP)",
+    "source_column": "C"
+  },
+  "ESTR3MA Index (+ 150BP)": {
+    "currency": "",
+    "description": "",
+    "first_month": "2001-01",
+    "last_month": "2026-01",
+    "months": 301,
+    "name": "ESTR3MA Index (+ 150BP)",
+    "source_column": "E"
+  },
+  "ESTR3MA Index (+ 200BP)": {
+    "currency": "EUR",
+    "description": "Euribor 3M",
+    "first_month": "2001-01",
+    "last_month": "2026-01",
+    "months": 301,
+    "name": "ESTR3MA Index (+ 200BP)",
+    "source_column": "G"
+  },
+  "JPEIDHEU Index": {
+    "currency": "EUR",
+    "description": "J.P. Morgan EMBIG Diversified",
+    "first_month": "1998-01",
+    "last_month": "2026-03",
+    "months": 339,
+    "name": "JPEIDHEU Index",
+    "source_column": "AC"
+  },
+  "LBEATREU Index": {
+    "currency": "EUR",
+    "description": "Euro Aggregate",
+    "first_month": "1998-07",
+    "last_month": "2026-03",
+    "months": 333,
+    "name": "LBEATREU Index",
+    "source_column": "U"
+  },
+  "LCEMTRUU Index": {
+    "currency": "USD",
+    "description": "EM Lc TR Unh USD",
+    "first_month": "2008-07",
+    "last_month": "2026-03",
+    "months": 213,
+    "name": "LCEMTRUU Index",
+    "source_column": "AI"
+  },
+  "LE13TREU Index": {
+    "currency": "EUR",
+    "description": "EuroAgg 1-3Yr",
+    "first_month": "1998-07",
+    "last_month": "2026-03",
+    "months": 333,
+    "name": "LE13TREU Index",
+    "source_column": "Y"
+  },
+  "LECPTREU Index": {
+    "currency": "EUR",
+    "description": "Euro Aggregate Corporate",
+    "first_month": "1998-07",
+    "last_month": "2026-03",
+    "months": 333,
+    "name": "LECPTREU Index",
+    "source_column": "AS"
+  },
+  "LEEGTREU Index": {
+    "currency": "EUR",
+    "description": "EA Govt",
+    "first_month": "1998-07",
+    "last_month": "2026-03",
+    "months": 333,
+    "name": "LEEGTREU Index",
+    "source_column": "AQ"
+  },
+  "LEGATRUU Index": {
+    "currency": "EUR",
+    "description": "Global Aggregate",
+    "first_month": "1990-02",
+    "last_month": "2026-03",
+    "months": 434,
+    "name": "LEGATRUU Index",
+    "source_column": "BC"
+  },
+  "LET1TREU Index": {
+    "currency": "EUR",
+    "description": "EA Tsy 1-3 TR Unh EUR",
+    "first_month": "1998-07",
+    "last_month": "2026-03",
+    "months": 333,
+    "name": "LET1TREU Index",
+    "source_column": "BG"
+  },
+  "MSDEE15N Index": {
+    "currency": "EUR",
+    "description": "MSCI Daily Net TR Europe",
+    "first_month": "1999-01",
+    "last_month": "2026-03",
+    "months": 327,
+    "name": "MSDEE15N Index",
+    "source_column": "M"
+  },
+  "MSDEEEMN Index": {
+    "currency": "EUR",
+    "description": "MSCI Emerging Markets Daily Ne",
+    "first_month": "2001-01",
+    "last_month": "2026-03",
+    "months": 303,
+    "name": "MSDEEEMN Index",
+    "source_column": "AE"
+  },
+  "MSDEEMUN Index": {
+    "currency": "EUR",
+    "description": "MSCI Daily Net TR EMU Eu",
+    "first_month": "1999-01",
+    "last_month": "2026-03",
+    "months": 327,
+    "name": "MSDEEMUN Index",
+    "source_column": "O"
+  },
+  "MSDEWEUN Index": {
+    "currency": "EUR",
+    "description": "MSCI Daily Net TR World",
+    "first_month": "1999-01",
+    "last_month": "2026-03",
+    "months": 327,
+    "name": "MSDEWEUN Index",
+    "source_column": "K"
+  },
+  "MSDEWIN Index": {
+    "currency": "EUR",
+    "description": "MSCI Daily Net TR World",
+    "first_month": "1999-01",
+    "last_month": "2026-03",
+    "months": 327,
+    "name": "MSDEWIN Index",
+    "source_column": "S"
+  },
+  "MXWOHEUR Index": {
+    "currency": "EUR",
+    "description": "MSCI Wrld 100% Hdg TR EU",
+    "first_month": "2001-01",
+    "last_month": "2026-03",
+    "months": 303,
+    "name": "MXWOHEUR Index",
+    "source_column": "AU"
+  },
+  "Mikrofinanz": {
+    "currency": "",
+    "description": "",
+    "first_month": "1998-07",
+    "last_month": "2026-03",
+    "months": 333,
+    "name": "Mikrofinanz",
+    "source_column": "BO"
+  },
+  "NDDLE15 Index": {
+    "currency": "LC",
+    "description": "MSCI Daily Net TR Europe Local",
+    "first_month": "1970-02",
+    "last_month": "2026-04",
+    "months": 675,
+    "name": "NDDLE15 Index",
+    "source_column": "BM"
+  },
+  "NDEEWNR Index": {
+    "currency": "EUR",
+    "description": "MSCI AC World Index Dail",
+    "first_month": "2001-01",
+    "last_month": "2026-03",
+    "months": 303,
+    "name": "NDEEWNR Index",
+    "source_column": "Q"
+  },
+  "NDUEEGF Index": {
+    "currency": "USD",
+    "description": "MSCI Daily TR Net Emergi",
+    "first_month": "1999-01",
+    "last_month": "2026-03",
+    "months": 327,
+    "name": "NDUEEGF Index",
+    "source_column": "AY"
+  },
+  "NEIXCTA Index": {
+    "currency": "USD",
+    "description": "SG CTA Index",
+    "first_month": "2000-01",
+    "last_month": "2026-03",
+    "months": 315,
+    "name": "NEIXCTA Index",
+    "source_column": "AO"
+  },
+  "SPGSUETR Index": {
+    "currency": "USD",
+    "description": "S&P GSCI ULT-LHT ENGY TR",
+    "first_month": "1970-02",
+    "last_month": "2026-03",
+    "months": 674,
+    "name": "SPGSUETR Index",
+    "source_column": "BE"
+  },
+  "TReuters Global Hedged": {
+    "currency": "",
+    "description": "",
+    "first_month": "2001-01",
+    "last_month": "2017-12",
+    "months": 204,
+    "name": "TReuters Global Hedged",
+    "source_column": "A"
+  },
+  "VG1 HTM Index": {
+    "currency": "",
+    "description": "",
+    "first_month": "1998-07",
+    "last_month": "2026-03",
+    "months": 333,
+    "name": "VG1 HTM Index",
+    "source_column": "BQ"
+  },
+  "VG2 HTM Index": {
+    "currency": "",
+    "description": "",
+    "first_month": "1998-07",
+    "last_month": "2026-03",
+    "months": 333,
+    "name": "VG2 HTM Index",
+    "source_column": "BS"
+  }
+}

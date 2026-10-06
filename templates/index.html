@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAA-Simulation</title>
+<meta name="description" content="Gewichte einer strategischen Asset Allocation konfigurieren und die historische Wirkung vergleichen.">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%232a78d6'/%3E%3Cpath d='M3 11.5 6 7l2.5 2.5L13 4' stroke='white' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="topbar">
+  <h1>SAA-Simulation</h1>
+  <span class="sub">Gewichte konfigurieren · Kennzahlen vergleichen · Effizienzlinie</span>
+  <span class="spacer"></span>
+  <span id="status" class="sub"></span>
+  <button id="theme" title="Hell / dunkel umschalten">Theme</button>
+</header>
+
+<div class="shell">
+
+  <aside class="panel">
+    <div class="block">
+      <h3>Gewichte</h3>
+      <div id="weights" class="weights"></div>
+      <div id="total-row" class="total-row">
+        <span>Summe</span>
+        <span class="value" id="total-value">–</span>
+      </div>
+      <p class="hint" id="normalise-hint" style="margin:4px 0 0;font-size:11.5px"></p>
+      <div class="btn-row" style="margin-top:10px">
+        <button id="normalise">auf 100 % normieren</button>
+        <button id="clear">alle auf 0</button>
+        <button id="recalc" class="primary">neu rechnen</button>
+      </div>
+    </div>
+
+    <div class="block">
+      <h3>Gruppensummen</h3>
+      <div id="group-sums" class="group-sums"></div>
+    </div>
+
+    <div class="block">
+      <h3>Annahmen</h3>
+      <div class="field">
+        <label for="ter">Kosten p.a. in % (TER)</label>
+        <input type="text" id="ter" inputmode="decimal">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="start">Start (JJJJ-MM)</label>
+          <input type="text" id="start" placeholder="z. B. 2003-02">
+        </div>
+        <div class="field">
+          <label for="end">Ende (JJJJ-MM)</label>
+          <input type="text" id="end" placeholder="z. B. 2025-12">
+        </div>
+      </div>
+      <p class="hint" id="period-hint" style="margin:0;font-size:11.5px"></p>
+      <p class="hint" style="margin:6px 0 0;font-size:11.5px">
+        Risikoloser Zins für Sharpe/Sortino: <span class="mono" id="risk-free-label"></span>
+      </p>
+    </div>
+
+    <div class="block">
+      <h3>Szenario speichern</h3>
+      <div class="field">
+        <label for="scenario-name">Name</label>
+        <input type="text" id="scenario-name">
+      </div>
+      <div class="field">
+        <label for="scenario-notes">Notiz</label>
+        <textarea id="scenario-notes" rows="2" placeholder="Worin unterscheidet sich dieses Szenario?"></textarea>
+      </div>
+      <button id="save" class="primary">als Szenario speichern</button>
+    </div>
+
+    <div class="block">
+      <h3>Szenarien vergleichen</h3>
+      <div id="scenario-list" class="scenario-list"></div>
+      <p class="hint" style="margin:8px 0 0;font-size:11.5px">
+        Angehakte Szenarien erscheinen in allen Auswertungen neben dem Entwurf.
+        Gespeichert wird je Szenario eine Datei unter <span class="mono">portfolios/</span>.
+      </p>
+    </div>
+  </aside>
+
+  <main>
+    <nav class="tabs" role="tablist" aria-label="Auswertungen">
+      <button role="tab" data-tab="kennzahlen" aria-selected="true">Kennzahlen</button>
+      <button role="tab" data-tab="verlauf" aria-selected="false">Verlauf &amp; Drawdown</button>
+      <button role="tab" data-tab="bullet" aria-selected="false">Markowitz-Bullet</button>
+      <button role="tab" data-tab="beitraege" aria-selected="false">Beiträge</button>
+      <button role="tab" data-tab="korrelation" aria-selected="false">Korrelationen</button>
+      <button role="tab" data-tab="jahre" aria-selected="false">Kalenderjahre</button>
+    </nav>
+    <div id="view"></div>
+  </main>
+
+</div>
+
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>

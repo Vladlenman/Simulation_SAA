@@ -1,0 +1,101 @@
+{
+  "comment": [
+    "The asset classes the tool offers, in display order. Edit this file to add,",
+    "remove or rename a class - the UI, the metrics and the efficient frontier all",
+    "read it, so nothing else needs touching.",
+    "",
+    "benchmark   = the series from data/monthly_returns.csv used for this class.",
+    "alternatives = other series offered in the UI's benchmark dropdown.",
+    "proxy       = true means the benchmark is a placeholder (cash + spread),",
+    "              not a real index for this asset class. Replace it when a real",
+    "              series is available: see docs/benchmark-mapping.md.",
+    "group       = used for the grouped weight sums shown next to the sliders."
+  ],
+  "risk_free": "ECC0TR03 Index",
+  "classes": [
+    {
+      "name": "Anleihen EURO",
+      "group": "Anleihen",
+      "benchmark": "LBEATREU Index",
+      "alternatives": ["LEEGTREU Index", "LECPTREU Index", "LE13TREU Index", "LET1TREU Index", "BEHLTREU Index"],
+      "proxy": false
+    },
+    {
+      "name": "Anleihen HTM",
+      "group": "Anleihen",
+      "benchmark": "ESTR3MA Index (+ 100BP)",
+      "alternatives": ["VG1 HTM Index", "VG2 HTM Index", "ESTR3MA Index (+ 150BP)", "ESTR3MA Index (+ 200BP)", "LET1TREU Index"],
+      "proxy": true
+    },
+    {
+      "name": "Geldmarkt",
+      "group": "Anleihen",
+      "benchmark": "DBDCONIA Index",
+      "alternatives": ["ECC0TR03 Index", "LET1TREU Index", "LE13TREU Index"],
+      "proxy": false
+    },
+    {
+      "name": "Anleihen Welt",
+      "group": "Anleihen",
+      "benchmark": "LEGATRUU Index",
+      "alternatives": ["JPEIDHEU Index", "LCEMTRUU Index"],
+      "proxy": false
+    },
+    {
+      "name": "Wandelanleihen (EUR hedged)",
+      "group": "Anleihen",
+      "benchmark": "Convertibles Index EUR",
+      "alternatives": ["TReuters Global Hedged"],
+      "proxy": false
+    },
+    {
+      "name": "Rohstoffe",
+      "group": "Real Assets",
+      "benchmark": "BCOMDET Index",
+      "alternatives": ["BCOMTR Index", "SPGSUETR Index"],
+      "proxy": false
+    },
+    {
+      "name": "Aktien Welt",
+      "group": "Aktien",
+      "benchmark": "MSDEWIN Index",
+      "alternatives": ["MSDEWEUN Index", "MXWOHEUR Index", "NDEEWNR Index"],
+      "proxy": false
+    },
+    {
+      "name": "Aktien Europa (EUR hedged)",
+      "group": "Aktien",
+      "benchmark": "NDDLE15 Index",
+      "alternatives": ["MSDEE15N Index", "MSDEEMUN Index"],
+      "proxy": false
+    },
+    {
+      "name": "Aktien EM",
+      "group": "Aktien",
+      "benchmark": "MSDEEEMN Index",
+      "alternatives": ["NDUEEGF Index"],
+      "proxy": false
+    },
+    {
+      "name": "Alternative Investments",
+      "group": "Plus Investments",
+      "benchmark": "ESTR3MA Index (+ 100BP)",
+      "alternatives": ["NEIXCTA Index", "ESTR3MA Index (+ 150BP)", "ESTR3MA Index (+ 200BP)"],
+      "proxy": true
+    },
+    {
+      "name": "Mikrofinanz",
+      "group": "Plus Investments",
+      "benchmark": "ESTR3MA Index (+ 100BP)",
+      "alternatives": ["ESTR3MA Index (+ 150BP)", "ESTR3MA Index (+ 200BP)", "LET1TREU Index"],
+      "proxy": true
+    },
+    {
+      "name": "Immobilien",
+      "group": "Real Assets",
+      "benchmark": "ESTR3MA Index (+ 200BP)",
+      "alternatives": ["CPBRLET AV Equity", "ESTR3MA Index (+ 150BP)", "ESTR3MA Index (+ 100BP)"],
+      "proxy": true
+    }
+  ]
+}

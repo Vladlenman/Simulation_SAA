@@ -1,0 +1,94 @@
+{
+  "source_workbook": "23f6c19a-BM-Tool_PH_abgabe.xlsx",
+  "imported": "2026-10-06",
+  "excel_saa_rows": [
+    [
+      "Anleihen EURO",
+      "LBEATREU Index",
+      0.29
+    ],
+    [
+      "Anleihen HTM / Geldmarkt",
+      "ESTR3MA Index (+ 100BP)",
+      0.35
+    ],
+    [
+      "Anleihen EURO (1-3y)",
+      "LET1TREU Index",
+      0.0
+    ],
+    [
+      "Anleihen EURO (Overnight)",
+      "DBDCONIA Index",
+      0.0
+    ],
+    [
+      "Anleihen Welt",
+      "LEGATRUU Index",
+      0.03
+    ],
+    [
+      "Anleihen EM",
+      "JPEIDHEU Index",
+      0.0
+    ],
+    [
+      "Wandelanleihen (EUR hedged)",
+      "Convertibles Index EUR",
+      0.04
+    ],
+    [
+      "Aktien Welt",
+      "MSDEWIN Index",
+      0.08
+    ],
+    [
+      "Aktien Welt (EUR hedged)",
+      "MXWOHEUR Index",
+      0.0
+    ],
+    [
+      "Aktien Europa (EUR hedged)",
+      "NDDLE15 Index",
+      0.05
+    ],
+    [
+      "Aktien EM",
+      "MSDEEEMN Index",
+      0.02
+    ],
+    [
+      "Alternative Investments",
+      "ESTR3MA Index (+ 100BP)",
+      0.03
+    ],
+    [
+      "Alternative Investments (CTA)",
+      "NEIXCTA Index",
+      0.0
+    ],
+    [
+      "Mikrofinanz",
+      "ESTR3MA Index (+ 100BP)",
+      0.02
+    ],
+    [
+      "Immobilien",
+      "ESTR3MA Index (+ 200BP)",
+      0.09
+    ]
+  ],
+  "figures": {
+    "scenario": "SAA neu (BM-Tool Abgabe)",
+    "ter": 0.0109,
+    "start": "2003-02",
+    "end": "2025-12",
+    "months": 275,
+    "total_return": 0.8629210691663325,
+    "cagr": 0.02752004633094418,
+    "volatility": 0.0284192838044391,
+    "max_drawdown": -0.09305372257332678,
+    "calmar": 0.2957436367928027,
+    "excel_sharpe_do_not_trust": 0.8284639760907965
+  }
+}
