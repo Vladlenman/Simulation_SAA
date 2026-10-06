@@ -16,5 +16,6 @@
   },
   "benchmarks": {},
   "ter": 0.0109,
-  "notes": "Die SAA aus BM-Tool!D4:D18 der abgegebenen Excel-Datei, TER 1,09 % p.a. (Median VK OeKB aus TER_PK). Reproduziert die Excel-Kennzahlen exakt - siehe tests/test_against_excel.py."
+  "notes": "Die SAA aus BM-Tool!D4:D18 der abgegebenen Excel-Datei, TER 1,09 % p.a. (Median VK OeKB aus TER_PK). Reproduziert die Excel-Kennzahlen exakt - siehe tests/test_against_excel.py. Benchmark-Modus 'Geldmarkt + Aufschlag', wie in der Excel-Datei.",
+  "mode": "key_rate"
 }

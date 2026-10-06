@@ -251,6 +251,48 @@ main { display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
   flex: none;
 }
 
+/* ------------------------------------------------------------- segmented -- */
+.segmented {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  padding: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.segmented button {
+  border: none;
+  background: none;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 550;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.segmented button[aria-checked="true"] {
+  background: var(--surface-1);
+  color: var(--text-primary);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.1);
+}
+.segmented button:hover:not([aria-checked="true"]) { color: var(--text-primary); }
+
+.mode-tag {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  flex: none;
+}
+
 .group-sums { display: flex; flex-direction: column; gap: 3px; font-size: 12px; }
 .group-sums div { display: flex; justify-content: space-between; color: var(--text-secondary); }
 .group-sums b { font-family: var(--mono); font-weight: 600; color: var(--text-primary); }

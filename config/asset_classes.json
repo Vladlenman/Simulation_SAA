@@ -1,101 +1,140 @@
 {
   "comment": [
-    "The asset classes the tool offers, in display order. Edit this file to add,",
-    "remove or rename a class - the UI, the metrics and the efficient frontier all",
-    "read it, so nothing else needs touching.",
+    "Assetklassen in Anzeigereihenfolge. Diese Datei steuert die ganze Anwendung -",
+    "Oberfläche, Kennzahlen und Effizienzlinie lesen sie, Code muss nicht angefasst",
+    "werden.",
     "",
-    "benchmark   = the series from data/monthly_returns.csv used for this class.",
-    "alternatives = other series offered in the UI's benchmark dropdown.",
-    "proxy       = true means the benchmark is a placeholder (cash + spread),",
-    "              not a real index for this asset class. Replace it when a real",
-    "              series is available: see docs/benchmark-mapping.md.",
-    "group       = used for the grouped weight sums shown next to the sliders."
+    "ZWEI BENCHMARK-MODI, in der Oberfläche umschaltbar:",
+    "",
+    "  index     'Marktindizes': jede Klasse läuft auf dem echten Index aus",
+    "            'benchmark'. Realistische Volatilität und Korrelation, dafür",
+    "            beginnt die Auswertung später (Immobilien erst ab 2004-09).",
+    "",
+    "  key_rate  'Geldmarkt + Aufschlag': Klassen mit 'key_rate_spread_bp' laufen",
+    "            stattdessen auf dem Geldmarktsatz plus diesem Aufschlag - so wie",
+    "            es die Excel-Datei gerechnet hat. Alle übrigen Klassen bleiben",
+    "            auch hier auf ihrem Marktindex.",
+    "",
+    "Felder je Klasse:",
+    "  benchmark           Marktindex, gilt im Modus 'index' (und im Modus",
+    "                      'key_rate', wenn kein Aufschlag hinterlegt ist).",
+    "  key_rate_spread_bp  Aufschlag in Basispunkten für den Modus 'key_rate'.",
+    "                      Fehlt das Feld, verhält sich die Klasse in beiden Modi",
+    "                      gleich. Jeder Wert ist erlaubt, die Reihe wird exakt",
+    "                      aus dem Basissatz erzeugt.",
+    "  index_proxy         true = auch der Marktindex ist nur ein Behelf.",
+    "  index_note          Begründung dazu, wird als Tooltip angezeigt.",
+    "  alternatives        weitere Reihen für das Dropdown je Klasse.",
+    "  group               für die Gruppensummen neben den Reglern."
   ],
+
   "risk_free": "ECC0TR03 Index",
+
+  "key_rate": {
+    "base": "ESTR3MA Index (+ 100BP)",
+    "base_spread_bp": 100,
+    "label": "Geldmarkt (Euribor 3M / €STR)",
+    "comment": [
+      "Die Reihen ESTR3MA (+100BP/+150BP/+200BP) unterscheiden sich auf 1e-19",
+      "genau um Aufschlag/12 pro Monat. Aus '+100BP' lässt sich der reine",
+      "Basissatz daher exakt zurückrechnen und jeder beliebige Aufschlag",
+      "erzeugen. Die so gebildeten Reihen heißen 'Geldmarkt + <n> bp'."
+    ]
+  },
+
+  "modes": [
+    {
+      "id": "index",
+      "label": "Marktindizes",
+      "hint": "Jede Assetklasse auf ihrem echten Index. Realistisches Risiko, dafür kürzere Historie."
+    },
+    {
+      "id": "key_rate",
+      "label": "Geldmarkt + Aufschlag",
+      "hint": "HTM, AI, Mikrofinanz und Immobilien als Geldmarktsatz plus Aufschlag - die Rechnung der Excel-Datei."
+    }
+  ],
+
   "classes": [
     {
       "name": "Anleihen EURO",
       "group": "Anleihen",
       "benchmark": "LBEATREU Index",
-      "alternatives": ["LEEGTREU Index", "LECPTREU Index", "LE13TREU Index", "LET1TREU Index", "BEHLTREU Index"],
-      "proxy": false
+      "alternatives": ["LEEGTREU Index", "LECPTREU Index", "LE13TREU Index", "LET1TREU Index", "BEHLTREU Index"]
     },
     {
       "name": "Anleihen HTM",
       "group": "Anleihen",
-      "benchmark": "ESTR3MA Index (+ 100BP)",
-      "alternatives": ["VG1 HTM Index", "VG2 HTM Index", "ESTR3MA Index (+ 150BP)", "ESTR3MA Index (+ 200BP)", "LET1TREU Index"],
-      "proxy": true
+      "benchmark": "LE13TREU Index",
+      "key_rate_spread_bp": 100,
+      "index_proxy": true,
+      "index_note": "HTM-Bestände werden zu fortgeführten Anschaffungskosten bewertet. Ein Marktindex zeigt deshalb eine Schwankung, die in der Bilanz gar nicht auftritt - er überzeichnet das Risiko, so wie der Geldmarktsatz es unterzeichnet. EuroAgg 1-3y ist als kurzlaufender Näherungswert gewählt; VG1/VG2 HTM Index im Dropdown bilden stattdessen eine konstante Verzinsung ab.",
+      "alternatives": ["LET1TREU Index", "VG1 HTM Index", "VG2 HTM Index", "LEEGTREU Index", "LBEATREU Index"]
     },
     {
       "name": "Geldmarkt",
       "group": "Anleihen",
       "benchmark": "DBDCONIA Index",
-      "alternatives": ["ECC0TR03 Index", "LET1TREU Index", "LE13TREU Index"],
-      "proxy": false
+      "alternatives": ["ECC0TR03 Index", "LET1TREU Index", "LE13TREU Index"]
     },
     {
       "name": "Anleihen Welt",
       "group": "Anleihen",
       "benchmark": "LEGATRUU Index",
-      "alternatives": ["JPEIDHEU Index", "LCEMTRUU Index"],
-      "proxy": false
+      "alternatives": ["JPEIDHEU Index", "LCEMTRUU Index"]
     },
     {
       "name": "Wandelanleihen (EUR hedged)",
       "group": "Anleihen",
       "benchmark": "Convertibles Index EUR",
-      "alternatives": ["TReuters Global Hedged"],
-      "proxy": false
+      "alternatives": ["TReuters Global Hedged"]
     },
     {
       "name": "Rohstoffe",
       "group": "Real Assets",
       "benchmark": "BCOMDET Index",
-      "alternatives": ["BCOMTR Index", "SPGSUETR Index"],
-      "proxy": false
+      "alternatives": ["BCOMTR Index", "SPGSUETR Index"]
     },
     {
       "name": "Aktien Welt",
       "group": "Aktien",
       "benchmark": "MSDEWIN Index",
-      "alternatives": ["MSDEWEUN Index", "MXWOHEUR Index", "NDEEWNR Index"],
-      "proxy": false
+      "alternatives": ["MSDEWEUN Index", "MXWOHEUR Index", "NDEEWNR Index"]
     },
     {
       "name": "Aktien Europa (EUR hedged)",
       "group": "Aktien",
       "benchmark": "NDDLE15 Index",
-      "alternatives": ["MSDEE15N Index", "MSDEEMUN Index"],
-      "proxy": false
+      "alternatives": ["MSDEE15N Index", "MSDEEMUN Index"]
     },
     {
       "name": "Aktien EM",
       "group": "Aktien",
       "benchmark": "MSDEEEMN Index",
-      "alternatives": ["NDUEEGF Index"],
-      "proxy": false
+      "alternatives": ["NDUEEGF Index"]
     },
     {
       "name": "Alternative Investments",
       "group": "Plus Investments",
-      "benchmark": "ESTR3MA Index (+ 100BP)",
-      "alternatives": ["NEIXCTA Index", "ESTR3MA Index (+ 150BP)", "ESTR3MA Index (+ 200BP)"],
-      "proxy": true
+      "benchmark": "NEIXCTA Index",
+      "key_rate_spread_bp": 100,
+      "alternatives": ["BCOMDET Index", "LET1TREU Index"]
     },
     {
       "name": "Mikrofinanz",
       "group": "Plus Investments",
-      "benchmark": "ESTR3MA Index (+ 100BP)",
-      "alternatives": ["ESTR3MA Index (+ 150BP)", "ESTR3MA Index (+ 200BP)", "LET1TREU Index"],
-      "proxy": true
+      "benchmark": "LET1TREU Index",
+      "key_rate_spread_bp": 100,
+      "index_proxy": true,
+      "index_note": "Für Mikrofinanz liegt keine eigene Zeitreihe vor. EuroAgg Treasury 1-3y ist nur ein Platzhalter mit ähnlicher Schwankungsbreite. Die Spalte 'Mikrofinanz' der Excel-Datei war eine exakte Kopie genau dieser Reihe. Echte Kandidaten: SMX (Symbiotics) oder der NAV des gehaltenen Fonds.",
+      "alternatives": ["LE13TREU Index", "BEHLTREU Index"]
     },
     {
       "name": "Immobilien",
       "group": "Real Assets",
-      "benchmark": "ESTR3MA Index (+ 200BP)",
-      "alternatives": ["CPBRLET AV Equity", "ESTR3MA Index (+ 150BP)", "ESTR3MA Index (+ 100BP)"],
-      "proxy": true
+      "benchmark": "CPBRLET AV Equity",
+      "key_rate_spread_bp": 200,
+      "alternatives": ["LECPTREU Index", "LBEATREU Index"]
     }
   ]
 }

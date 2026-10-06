@@ -19,8 +19,10 @@ python run.py
 
 * **Gewichte einstellen** für 12 Assetklassen, per Zahl oder Regler, mit
   Gruppensummen und Normierung auf 100 %.
-* **Benchmark je Assetklasse wählen** – pro Klasse ein Dropdown aus den
-  verfügbaren Zeitreihen.
+* **Zwischen zwei Benchmark-Modi umschalten** (siehe unten) und beide direkt
+  gegenüberstellen.
+* **Benchmark je Assetklasse überschreiben** – pro Klasse ein Dropdown aus den
+  verfügbaren Zeitreihen, das den Modus für diese eine Klasse aussticht.
 * **Kennzahlen**: Total Return, Rendite p.a., Volatilität, Sharpe, Sortino,
   Max Drawdown mit Tief und Erholungsdauer, Calmar, bester/schlechtester
   Monat, Anteil positiver Monate, VaR und CVaR 95 %.
@@ -92,7 +94,9 @@ python tests/test_against_excel.py
 Der Test rechnet die SAA der abgegebenen Datei mit ihren 15 Benchmarkzeilen und
 1,09 % TER über 2003-02 bis 2025-12 und vergleicht mit den Werten aus
 `BM-Tool!D34:I34`. Abweichung unter **1e-12** bei Total Return, Rendite p.a.,
-Volatilität, Max Drawdown und Calmar Ratio.
+Volatilität, Max Drawdown und Calmar Ratio. Ein zweiter Test macht dasselbe
+über die Konfiguration im Modus `Geldmarkt + Aufschlag`, damit eine unbedachte
+Änderung an `asset_classes.json` auffällt.
 
 **Zwei Werte weichen bewusst ab:**
 
@@ -106,17 +110,46 @@ Volatilität, Max Drawdown und Calmar Ratio.
 
 ---
 
-## ⚠️ Vier Assetklassen haben noch keinen echten Benchmark
+## Die zwei Benchmark-Modi
 
-`Anleihen HTM`, `Alternative Investments`, `Mikrofinanz` und `Immobilien`
-laufen – wie schon in der Excel-Datei – auf **Euribor 3M + Aufschlag**. Das ist
-eine fast gerade Linie ohne Risiko. Volatilität, Sharpe Ratio und vor allem die
-Effizienzlinie fallen dadurch zu gut aus: das Max-Sharpe-Portfolio landet bei
-über 90 % Immobilien, weil der Optimierer dort Rendite ohne Risiko sieht.
+Oben links im Bedienfeld steht ein Umschalter:
 
-Das Tool kennzeichnet diese Klassen überall mit `PROXY`.
-**`docs/benchmark-mapping.md` listet auf, welche Reihen gebraucht werden** und
-welche brauchbaren Alternativen schon in den Daten liegen.
+| Modus | Was passiert | Wofür |
+|---|---|---|
+| **Marktindizes** | jede Assetklasse auf einem echten Index | realistisches Risiko, belastbare Effizienzlinie |
+| **Geldmarkt + Aufschlag** | `Anleihen HTM`, `Alternative Investments`, `Mikrofinanz` und `Immobilien` auf Geldmarktsatz + Aufschlag | Nachvollziehbarkeit gegenüber der Excel-Datei, längere Historie |
+
+Der Umschalter betrifft **nur diese vier Klassen** – alle übrigen bleiben in
+beiden Stellungen auf ihrem Marktindex. Der Modus wird **mit dem Szenario
+gespeichert**, dieselben Gewichte lassen sich also zweimal ablegen und
+vergleichen. Dafür gibt es auch den Knopf **"beide Modi vergleichen"**.
+
+Was der Umschalter ausmacht, bei gleichen Gewichten und gleichem Zeitraum
+(2004-09 bis 2026-01):
+
+| Kennzahl | Marktindizes | Geldmarkt + Aufschlag |
+|---|---|---|
+| Volatilität p.a. | 3,15 % | 2,90 % |
+| Sharpe Ratio | 0,37 | **0,47** |
+| Max Drawdown | −10,46 % | −9,31 % |
+| Max-Sharpe-Portfolio | 44 % HTM, 36 % Immobilien, 9 % Aktien Welt | **90 % Immobilien** |
+
+`Geldmarkt + Aufschlag` ist eine nahezu gerade Linie ohne eigenes Risiko. Der
+Optimierer sieht dort Rendite ohne Risiko und schiebt fast alles hinein – ein
+Artefakt, kein Ergebnis. **Für jede Optimierung den Modus `Marktindizes`
+verwenden.** Der Preis: die Auswertung beginnt erst 2004-09 statt 2001-01, weil
+der Immobilienindex nicht weiter zurückreicht.
+
+Der Geldmarktsatz wird exakt aus den Reihen der Excel-Datei zurückgerechnet
+(`ESTR3MA (+100BP)` minus 100 bp), deshalb ist **jeder** Aufschlag
+konfigurierbar, nicht nur 100/150/200 bp. `tests/` prüft das gegen die
+Originalreihen.
+
+⚠️ Zwei Klassen haben **auch im Modus `Marktindizes`** keinen echten Benchmark:
+`Mikrofinanz` (es existiert gar keine Reihe) und `Anleihen HTM` (zu
+fortgeführten Anschaffungskosten bewertet, ein Marktindex überzeichnet das
+Risiko). Beide sind mit `PROXY` markiert.
+**`docs/benchmark-mapping.md` sagt, was gebraucht wird.**
 
 ---
 
@@ -124,7 +157,7 @@ welche brauchbaren Alternativen schon in den Daten liegen.
 
 ```
 run.py                      Start
-config/asset_classes.json   Assetklassen und ihre Benchmarks  <- hier anpassen
+config/asset_classes.json   Assetklassen, Benchmarks, beide Modi  <- hier anpassen
 data/monthly_returns.csv    Monatsrenditen, aus timeseries
 data/benchmarks.json        Katalog: Name, Währung, Historie
 portfolios/*.json           gespeicherte Szenarien, eine Datei je Szenario
@@ -143,7 +176,8 @@ docs/                       Analyse der Excel-Datei, Benchmark-Zuordnung
 ```
 
 Gespeicherte Szenarien sind einzelne JSON-Dateien – versionierbar, per Mail
-weitergebbar und auch ohne das Tool lesbar.
+weitergebbar und auch ohne das Tool lesbar. Jede enthält Gewichte, TER,
+Benchmark-Modus und etwaige Überschreibungen je Klasse.
 
 ---
 
@@ -171,7 +205,7 @@ r_Portfolio(t) = Σ w_i · r_Benchmark(i,t) − ((1 + TER)^(1/12) − 1)
 
 ## Offene Punkte
 
-* **Echte Benchmarks** für die vier Platzhalterklassen, siehe oben.
+* **Echte Benchmarks** für `Mikrofinanz` und `Anleihen HTM`, siehe oben.
 * **`OeKB-Daten` und `BONUS-Daten`** sind noch nicht eingebunden. Die Excel-Datei
   stellte der simulierten SAA die tatsächlich erzielte Performance (BONUS) und
   den Branchenschnitt (OeKB) gegenüber. Beides liegt als Monatsreihe vor und

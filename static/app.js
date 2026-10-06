@@ -13,6 +13,7 @@ const state = {
   weights: {},        // asset class -> share (0..1)
   benchmarks: {},     // asset class -> ticker override
   ter: 0.0109,
+  mode: "key_rate",
   start: "",
   end: "",
   draftName: "Neues Szenario",
@@ -35,16 +36,22 @@ const parsePct = (text) => {
 };
 const sum = (obj) => Object.values(obj).reduce((a, b) => a + (Number(b) || 0), 0);
 
+/* Colour follows the entity: the order comes from whatever was last
+   simulated, so a scenario keeps its hue across tabs and a mode comparison
+   does not paint both runs the same. */
 function colorFor(name) {
-  const names = [DRAFT, ...[...state.compare]];
-  const i = names.indexOf(name);
-  return seriesColor(i < 0 ? 0 : i);
+  const order = state.seriesOrder?.length
+    ? state.seriesOrder
+    : [DRAFT, ...[...state.compare]];
+  const i = order.indexOf(name);
+  return seriesColor(i < 0 ? order.length : i);
 }
 
 function saveDraft() {
   try {
     localStorage.setItem(LS_KEY, JSON.stringify({
       weights: state.weights, benchmarks: state.benchmarks, ter: state.ter,
+      mode: state.mode,
       start: state.start, end: state.end, draftName: state.draftName,
       notes: state.notes, compare: [...state.compare], bounds: state.bounds,
     }));
@@ -83,6 +90,43 @@ function notice(container, text, kind = "") {
   container.appendChild(div);
 }
 
+/* -------------------------------------------------------------- mode switch -- */
+function modeInfo(id) {
+  return state.boot.modes.find((m) => m.id === id) || { id, label: id, hint: "" };
+}
+
+function renderModeSwitch() {
+  const host = $("#mode-switch");
+  host.innerHTML = "";
+  for (const mode of state.boot.modes) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.setAttribute("role", "radio");
+    button.setAttribute("aria-checked", String(state.mode === mode.id));
+    button.textContent = mode.label;
+    button.title = mode.hint || "";
+    button.addEventListener("click", () => {
+      if (state.mode === mode.id) return;
+      state.mode = mode.id;
+      state.lastFrontier = null; // the frontier depends on the benchmarks
+      renderModeSwitch();
+      renderWeights();
+      saveDraft();
+      refresh();
+    });
+    host.appendChild(button);
+  }
+
+  const info = modeInfo(state.mode);
+  const changed = (info.changes || []).length;
+  $("#mode-hint").innerHTML =
+    `${info.hint || ""}${
+      changed
+        ? ` <span class="muted">Betrifft ${changed} Klassen: ${info.changes.join(", ")}.</span>`
+        : ""
+    }`;
+}
+
 /* ------------------------------------------------------------ weight panel -- */
 function renderWeights() {
   const host = $("#weights");
@@ -92,16 +136,26 @@ function renderWeights() {
     const row = document.createElement("div");
     row.className = "weight-row";
 
+    const current = cls.modes[state.mode] || cls.modes.index;
+
     const name = document.createElement("div");
     name.className = "name";
     name.innerHTML = `<span class="label" title="${cls.name}">${cls.name}</span>`;
-    if (cls.proxy) {
+    if (cls.mode_differs) {
+      const tag = document.createElement("span");
+      tag.className = "mode-tag";
+      tag.textContent = "MODUS";
+      tag.title =
+        `Diese Klasse hängt am Benchmark-Modus:\n` +
+        `• Marktindizes: ${cls.modes.index.benchmark}\n` +
+        `• Geldmarkt + Aufschlag: ${cls.modes.key_rate.benchmark}`;
+      name.appendChild(tag);
+    }
+    if (current.proxy && !state.benchmarks[cls.name]) {
       const flag = document.createElement("span");
       flag.className = "proxy-flag";
       flag.textContent = "PROXY";
-      flag.title =
-        "Der Benchmark ist ein Platzhalter (Geldmarkt + Aufschlag), kein echter Index " +
-        "für diese Assetklasse. Kennzahlen und Effizienzlinie sind dadurch verzerrt.";
+      flag.title = current.note || "Der Benchmark ist nur ein Behelf für diese Assetklasse.";
       name.appendChild(flag);
     }
 
@@ -123,13 +177,17 @@ function renderWeights() {
     bench.className = "bench";
     const select = document.createElement("select");
     select.setAttribute("aria-label", `Benchmark ${cls.name}`);
+    const auto = document.createElement("option");
+    auto.value = "";
+    auto.textContent = `automatisch · ${current.benchmark}`;
+    select.appendChild(auto);
     for (const choice of cls.choices) {
       const option = document.createElement("option");
       option.value = choice.ticker;
       option.textContent = `${choice.ticker} · ${choice.label || ""} (ab ${choice.first_month})`;
       select.appendChild(option);
     }
-    select.value = state.benchmarks[cls.name] || cls.benchmark;
+    select.value = state.benchmarks[cls.name] || "";
     bench.appendChild(select);
 
     const push = (value) => {
@@ -142,8 +200,11 @@ function renderWeights() {
     box.addEventListener("change", () => push(Math.max(0, parsePct(box.value))));
     slider.addEventListener("input", () => push(Number(slider.value) / 100));
     select.addEventListener("change", () => {
-      state.benchmarks[cls.name] = select.value;
+      if (select.value) state.benchmarks[cls.name] = select.value;
+      else delete state.benchmarks[cls.name];
+      state.lastFrontier = null;
       saveDraft();
+      renderWeights();
       refresh();
     });
 
@@ -184,7 +245,7 @@ function renderScenarios() {
   draftItem.innerHTML = `
     <span class="swatch" style="background:${seriesColor(0)}"></span>
     <span class="nm"><b>${DRAFT}</b> <span class="muted">(aktuelle Gewichte)</span></span>
-    <span class="muted mono">${fmt.pct(state.ter, 2)}</span>
+    <span class="muted mono">${modeInfo(state.mode).label}</span>
     <span></span>`;
   host.appendChild(draftItem);
 
@@ -207,8 +268,10 @@ function renderScenarios() {
 
     const label = document.createElement("span");
     label.className = "nm";
-    label.title = scenario.notes || scenario.name;
-    label.textContent = scenario.name;
+    const scenarioMode = modeInfo(scenario.mode || "key_rate");
+    label.title = `${scenario.notes || scenario.name}\nModus: ${scenarioMode.label}`;
+    label.innerHTML =
+      `${scenario.name} <span class="muted" style="font-size:11px">· ${scenarioMode.label}</span>`;
 
     const swatch = document.createElement("span");
     swatch.className = "swatch";
@@ -225,11 +288,14 @@ function renderScenarios() {
       }
       state.benchmarks = { ...scenario.benchmarks };
       state.ter = scenario.ter;
+      state.mode = scenario.mode || "key_rate";
       state.draftName = scenario.name;
       state.notes = scenario.notes || "";
+      state.lastFrontier = null;
       $("#ter").value = (scenario.ter * 100).toFixed(2);
       $("#scenario-name").value = scenario.name;
       $("#scenario-notes").value = scenario.notes || "";
+      renderModeSwitch();
       renderWeights();
       saveDraft();
       refresh();
@@ -263,6 +329,7 @@ function draftScenario() {
     benchmarks: state.benchmarks,
     ter: state.ter,
     notes: state.notes,
+    mode: state.mode,
   };
 }
 
@@ -271,18 +338,19 @@ function activeScenarios() {
   return [draftScenario(), ...chosen];
 }
 
-async function refresh() {
+async function refresh(extraScenarios = null) {
   setBusy(true);
   try {
     const payload = await api("/api/simulate", {
       method: "POST",
       body: JSON.stringify({
-        scenarios: activeScenarios(),
+        scenarios: extraScenarios || activeScenarios(),
         start: state.start,
         end: state.end,
       }),
     });
     state.lastSim = payload;
+    state.seriesOrder = (payload.results || []).map((r) => r.scenario.name);
     renderActiveTab();
   } catch (error) {
     state.lastSim = null;
@@ -291,6 +359,18 @@ async function refresh() {
   } finally {
     setBusy(false);
   }
+}
+
+/* Same weights, once per benchmark mode - the clearest way to see what the
+   switch is actually worth. */
+function compareModes() {
+  return refresh(
+    state.boot.modes.map((mode) => ({
+      ...draftScenario(),
+      name: modeInfo(mode.id).label,
+      mode: mode.id,
+    }))
+  );
 }
 
 async function loadFrontier() {
@@ -302,6 +382,7 @@ async function loadFrontier() {
         asset_classes: state.boot.asset_classes.map((c) => c.name),
         benchmarks: state.benchmarks,
         bounds: state.bounds,
+        mode: state.mode,
         start: state.start,
         end: state.end,
         points: 36,
@@ -316,6 +397,8 @@ async function loadFrontier() {
 
 async function reload() {
   state.boot = await api("/api/bootstrap");
+  renderModeSwitch();
+  renderWeights();
   renderScenarios();
   await refresh();
 }
@@ -336,17 +419,25 @@ function renderActiveTab() {
     }
   }
 
-  const proxies = state.boot.asset_classes.filter(
-    (c) => c.proxy && (state.weights[c.name] || 0) > 0
-  );
-  if (proxies.length) {
+  // One line per scenario that is standing on a stand-in benchmark, naming the
+  // classes and how much weight sits on them.
+  for (const result of results) {
+    const proxies = result.proxy_members || [];
+    if (!proxies.length) continue;
+    const share = proxies.reduce((a, b) => a + b.weight, 0);
+    const label = results.length > 1 ? `<b>${result.scenario.name}:</b> ` : "";
     notice(
       view,
-      `<b>Platzhalter-Benchmarks im Portfolio:</b> ${proxies
-        .map((c) => c.name)
-        .join(", ")}. Diese Klassen laufen auf "Geldmarkt + Aufschlag" - eine
-       Gerade ohne echtes Risiko. Vola, Sharpe und die Effizienzlinie sind
-       dadurch zu gut. Siehe <span class="mono">docs/benchmark-mapping.md</span>.`,
+      `${label}<b>Behelfs-Benchmark bei ${fmt.pct(share, 0)} des Portfolios</b> –
+       ${proxies.map((x) => `${x.asset_class} <span class="mono">(${x.benchmark})</span>`).join(", ")}.
+       ${
+         (result.scenario.mode || "key_rate") === "key_rate"
+           ? `Geldmarkt + Aufschlag ist eine nahezu gerade Linie ohne eigenes Risiko –
+              Vola, Sharpe und Effizienzlinie fallen zu gut aus.
+              Der Modus <b>Marktindizes</b> zeigt die realistischere Variante.`
+           : `Für diese Klassen gibt es noch keinen echten Index, siehe
+              <span class="mono">docs/benchmark-mapping.md</span>.`
+       }`,
       "warn"
     );
   }
@@ -387,7 +478,13 @@ function viewKennzahlen(view, results, comparison) {
     return;
   }
 
-  const tiles = card(view, "Entwurf auf einen Blick", `Zeitraum ${first.stats.start} bis ${first.stats.end}, ${first.stats.months} Monate, netto nach Kosten von ${fmt.pct(first.scenario.ter, 2)} p.a.`);
+  const tiles = card(
+    view,
+    `${first.scenario.name} auf einen Blick`,
+    `Benchmark-Modus <b>${modeInfo(first.scenario.mode || "key_rate").label}</b> ·
+     Zeitraum ${first.stats.start} bis ${first.stats.end}, ${first.stats.months} Monate ·
+     netto nach Kosten von ${fmt.pct(first.scenario.ter, 2)} p.a.`
+  );
   const box = document.createElement("div");
   box.className = "tiles";
   const s = first.stats;
@@ -414,11 +511,14 @@ function viewKennzahlen(view, results, comparison) {
       : "Weitere Szenarien links anhaken, um sie hier gegenüberzustellen."
   );
 
+  const modeByName = {};
+  for (const entry of results) modeByName[entry.scenario.name] = entry.scenario.mode || "key_rate";
   const rows = comparison
     ? comparison.scenarios.map((entry) => ({ name: entry.name, stats: entry.stats }))
     : results.map((entry) => ({ name: entry.scenario.name, stats: entry.stats }));
 
   const metricRows = [
+    ["Benchmark-Modus", (st, name) => modeInfo(modeByName[name] || "key_rate").label, "text"],
     ["Zeitraum", (st) => `${st.start} – ${st.end}`, "text"],
     ["Monate", (st) => String(st.months), "num"],
     ["Total Return", (st) => fmt.pct(st.total_return, 1), "num"],
@@ -448,7 +548,7 @@ function viewKennzahlen(view, results, comparison) {
         .map(
           ([label, pick, kind]) =>
             `<tr><td>${label}</td>${rows
-              .map((r) => `<td class="${kind === "num" ? "num" : ""}">${pick(r.stats)}</td>`)
+              .map((r) => `<td class="${kind === "num" ? "num" : ""}">${pick(r.stats, r.name)}</td>`)
               .join("")}</tr>`
         )
         .join("")}</tbody>
@@ -879,6 +979,9 @@ async function init() {
     for (const name of names) state.weights[name] = saved.weights[name] ?? 0;
     state.benchmarks = saved.benchmarks || {};
     state.ter = Number.isFinite(saved.ter) ? saved.ter : 0.0109;
+    state.mode = state.boot.modes.some((m) => m.id === saved.mode)
+      ? saved.mode
+      : state.boot.default_mode;
     state.start = saved.start || "";
     state.end = saved.end || "";
     state.draftName = saved.draftName || "Neues Szenario";
@@ -891,6 +994,7 @@ async function init() {
     const seed = state.boot.scenarios[0];
     for (const name of names) state.weights[name] = seed?.weights?.[name] ?? 0;
     state.ter = seed?.ter ?? 0.0109;
+    state.mode = seed?.mode || state.boot.default_mode;
     state.draftName = seed ? `${seed.name} (Kopie)` : "Neues Szenario";
   }
 
@@ -902,8 +1006,11 @@ async function init() {
   $("#period-hint").textContent = `Daten vorhanden von ${state.boot.months.first} bis ${state.boot.months.last}.`;
   $("#risk-free-label").textContent = `${state.boot.risk_free.ticker}`;
 
+  renderModeSwitch();
   renderWeights();
   renderScenarios();
+
+  $("#compare-modes").addEventListener("click", compareModes);
 
   $("#ter").addEventListener("change", (e) => {
     state.ter = Math.max(0, parsePct(e.target.value));
@@ -940,7 +1047,10 @@ async function init() {
     try {
       await api("/api/scenario", {
         method: "POST",
-        body: JSON.stringify({ name, weights: state.weights, benchmarks: state.benchmarks, ter: state.ter, notes: state.notes }),
+        body: JSON.stringify({
+          name, weights: state.weights, benchmarks: state.benchmarks,
+          ter: state.ter, notes: state.notes, mode: state.mode,
+        }),
       });
       state.compare.add(name);
       await reload();

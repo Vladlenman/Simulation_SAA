@@ -18,18 +18,28 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from . import metrics
-from .data import AssetClass, ReturnPanel
+from .data import KEY_RATE_MODE, MODES, AssetClass, ReturnPanel
 
 
 @dataclass
 class Scenario:
-    """A named set of weights - what the user saves and compares."""
+    """A named set of weights - what the user saves and compares.
+
+    ``mode`` picks which benchmark each asset class uses (see
+    ``config/asset_classes.json``). It is stored with the scenario, so the same
+    weights can be saved twice and compared under both modes. It defaults to
+    ``key_rate`` because that is what the Excel workbook did, so scenarios
+    saved before the switch existed keep their original meaning.
+
+    ``benchmarks`` overrides the mode for individual classes.
+    """
 
     name: str
     weights: dict[str, float] = field(default_factory=dict)
     benchmarks: dict[str, str] = field(default_factory=dict)
     ter: float = 0.0
     notes: str = ""
+    mode: str = KEY_RATE_MODE
 
     def normalised(self) -> dict[str, float]:
         total = sum(self.weights.values())
@@ -44,16 +54,19 @@ class Scenario:
             "benchmarks": self.benchmarks,
             "ter": self.ter,
             "notes": self.notes,
+            "mode": self.mode,
         }
 
     @classmethod
     def from_dict(cls, raw: dict) -> "Scenario":
+        mode = str(raw.get("mode") or KEY_RATE_MODE)
         return cls(
             name=str(raw.get("name", "Unbenannt")),
             weights={str(k): float(v) for k, v in (raw.get("weights") or {}).items()},
             benchmarks={str(k): str(v) for k, v in (raw.get("benchmarks") or {}).items()},
             ter=float(raw.get("ter", 0.0) or 0.0),
             notes=str(raw.get("notes", "")),
+            mode=mode if mode in MODES else KEY_RATE_MODE,
         )
 
 
@@ -69,6 +82,7 @@ class Simulation:
     benchmarks: list[str]
     asset_returns: np.ndarray
     window_limited_by: list[str]
+    proxy_members: list[dict] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
 
     # -- headline figures -------------------------------------------------
@@ -171,6 +185,7 @@ class Simulation:
             "performance_contribution": self.performance_contribution(),
             "risk_contribution": self.risk_contribution(),
             "window_limited_by": self.window_limited_by,
+            "proxy_members": self.proxy_members,
             "warnings": self.warnings,
         }
 
@@ -178,7 +193,7 @@ class Simulation:
 def resolve_benchmarks(
     scenario: Scenario, classes: list[AssetClass]
 ) -> dict[str, str]:
-    """Per class: the scenario's override if set, else the configured default."""
+    """Per class: the scenario's own override if set, else its mode's benchmark."""
     by_name = {c.name: c for c in classes}
     out: dict[str, str] = {}
     for name in scenario.weights:
@@ -186,7 +201,7 @@ def resolve_benchmarks(
         if chosen:
             out[name] = chosen
         elif name in by_name:
-            out[name] = by_name[name].benchmark
+            out[name] = by_name[name].benchmark_for(scenario.mode)
     return out
 
 
@@ -311,6 +326,25 @@ def simulate(
         if valid.size and int(valid[0]) >= first:
             limiters.append(f"{members[idx]} ({ticker}, ab {panel.months[int(valid[0])]})")
 
+    # Classes carrying weight whose benchmark is only a stand-in in this mode.
+    by_name = {c.name: c for c in classes}
+    proxies = []
+    for idx, name in enumerate(members):
+        cls = by_name.get(name)
+        if cls is None:
+            continue
+        overridden = name in scenario.benchmarks
+        if overridden or not cls.is_proxy(scenario.mode):
+            continue
+        proxies.append(
+            {
+                "asset_class": name,
+                "benchmark": benchmarks[idx],
+                "weight": float(weights[idx]),
+                "note": cls.proxy_note(scenario.mode),
+            }
+        )
+
     return Simulation(
         scenario=scenario,
         months=months,
@@ -322,6 +356,7 @@ def simulate(
         benchmarks=benchmarks,
         asset_returns=asset_returns,
         window_limited_by=limiters,
+        proxy_members=proxies,
         warnings=warnings,
     )
 

@@ -16,5 +16,6 @@
   },
   "benchmarks": {},
   "ter": 0.0109,
-  "notes": "Die TAA-Spalte für VG 3 aus dem Bewegungsmonitor (Spalte L) zum Abgabestand, als Vergleichsszenario zur SAA."
+  "notes": "Die TAA-Spalte für VG 3 aus dem Bewegungsmonitor (Spalte L) zum Abgabestand, als Vergleichsszenario zur SAA. Benchmark-Modus 'Geldmarkt + Aufschlag', wie in der Excel-Datei.",
+  "mode": "key_rate"
 }

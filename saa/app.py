@@ -27,7 +27,16 @@ import numpy as np
 
 from . import frontier as frontier_mod
 from . import metrics
-from .data import ROOT, asset_classes, panel, reset_caches
+from .data import (
+    INDEX_MODE,
+    KEY_RATE_MODE,
+    MODES,
+    ROOT,
+    asset_classes,
+    benchmark_config,
+    panel,
+    reset_caches,
+)
 from .portfolio import Scenario, align, simulate
 from .store import ScenarioStore
 
@@ -67,39 +76,86 @@ def jsonable(value):
 # payload builders
 # --------------------------------------------------------------------------- #
 def bootstrap_payload() -> dict:
-    classes, risk_free = asset_classes()
+    config = benchmark_config()
     data = panel()
     store = ScenarioStore()
 
-    return {
-        "asset_classes": [
+    def describe(ticker: str) -> dict:
+        info = data.describe(ticker)
+        return {
+            "ticker": ticker,
+            "label": info.get("description") or ticker,
+            "first_month": info.get("first_month"),
+            "last_month": info.get("last_month"),
+            "currency": info.get("currency"),
+            "synthetic": bool(info.get("synthetic", False)),
+        }
+
+    classes = []
+    for cls in config.classes:
+        per_mode = {}
+        for mode in MODES:
+            ticker = cls.benchmark_for(mode)
+            per_mode[mode] = {
+                "benchmark": ticker,
+                "proxy": cls.is_proxy(mode),
+                "note": cls.proxy_note(mode),
+                "available": data.has(ticker),
+            }
+        choices = [
+            describe(t)
+            for mode in MODES
+            for t in cls.benchmark_choices(mode)
+            if data.has(t)
+        ]
+        seen: dict[str, dict] = {}
+        for choice in choices:
+            seen.setdefault(choice["ticker"], choice)
+
+        classes.append(
             {
-                **asdict(cls),
-                "alternatives": list(cls.alternatives),
-                "choices": [
-                    {
-                        "ticker": ticker,
-                        "label": data.describe(ticker).get("description") or ticker,
-                        "first_month": data.describe(ticker).get("first_month"),
-                        "last_month": data.describe(ticker).get("last_month"),
-                        "currency": data.describe(ticker).get("currency"),
-                    }
-                    for ticker in cls.benchmark_choices()
-                    if data.has(ticker)
+                "name": cls.name,
+                "group": cls.group,
+                "benchmark": cls.benchmark,
+                "key_rate_spread_bp": cls.key_rate_spread_bp,
+                "mode_differs": cls.key_rate_spread_bp is not None,
+                "modes": per_mode,
+                "choices": list(seen.values()),
+            }
+        )
+
+    return {
+        "asset_classes": classes,
+        "modes": [
+            {
+                **mode,
+                "changes": [
+                    c.name
+                    for c in config.classes
+                    if mode.get("id") == KEY_RATE_MODE and c.key_rate_spread_bp is not None
                 ],
             }
-            for cls in classes
+            for mode in config.modes
         ],
+        "default_mode": KEY_RATE_MODE,
         "risk_free": {
-            "ticker": risk_free,
-            "label": data.describe(risk_free).get("description") or risk_free,
+            "ticker": config.risk_free,
+            "label": data.describe(config.risk_free).get("description")
+            or config.risk_free,
         },
         "benchmarks": [
             {
                 "ticker": ticker,
                 **{
                     key: data.describe(ticker).get(key)
-                    for key in ("description", "currency", "first_month", "last_month", "months")
+                    for key in (
+                        "description",
+                        "currency",
+                        "first_month",
+                        "last_month",
+                        "months",
+                        "synthetic",
+                    )
                 },
             }
             for ticker in sorted(data.tickers)
@@ -181,13 +237,15 @@ def frontier_payload(body: dict) -> dict:
     selected = body.get("asset_classes") or [c.name for c in classes]
     by_name = {c.name: c for c in classes}
     overrides = body.get("benchmarks") or {}
+    mode = body.get("mode")
+    mode = mode if mode in MODES else KEY_RATE_MODE
 
     names: list[str] = []
     tickers: list[str] = []
     for name in selected:
         if name not in by_name:
             continue
-        ticker = overrides.get(name) or by_name[name].benchmark
+        ticker = overrides.get(name) or by_name[name].benchmark_for(mode)
         if data.has(ticker):
             names.append(name)
             tickers.append(ticker)
@@ -202,7 +260,10 @@ def frontier_payload(body: dict) -> dict:
     points = max(6, min(points, 80))
 
     key = json.dumps(
-        {"t": tickers, "n": names, "s": start, "e": end, "b": bounds_raw, "p": points},
+        {
+            "t": tickers, "n": names, "s": start, "e": end,
+            "b": bounds_raw, "p": points, "m": mode,
+        },
         sort_keys=True,
     )
     with _frontier_lock:
@@ -244,7 +305,8 @@ def frontier_payload(body: dict) -> dict:
         "end": data.months[int(rows[-1])],
         "months": int(rows.size),
     }
-    result["proxy_classes"] = [n for n in names if by_name[n].proxy]
+    result["mode"] = mode
+    result["proxy_classes"] = [n for n in names if by_name[n].is_proxy(mode)]
 
     with _frontier_lock:
         if len(_frontier_cache) > 64:
