@@ -102,8 +102,42 @@ Zwei Klassen haben **auch im Modus *Marktindizes*** keinen echten Benchmark:
 
 | Klasse | Lage | Was helfen würde |
 |---|---|---|
-| **Mikrofinanz** | Es gibt gar keine Reihe. `LET1TREU` (EA Tsy 1–3y) ist nur ein Platzhalter mit ähnlicher Schwankungsbreite. Die Spalte `Mikrofinanz` der Excel-Datei war eine **exakte Kopie genau dieser Reihe**. | SMX (Symbiotics Microfinance Index) oder der NAV-Verlauf des gehaltenen Fonds |
-| **Anleihen HTM** | Hier ist das Problem grundsätzlich: HTM wird zu fortgeführten Anschaffungskosten bewertet. Ein Marktindex zeigt eine Schwankung, die in der Bilanz nie auftritt – er **überzeichnet** das Risiko, so wie der Geldmarktsatz es unterzeichnet. | die tatsächliche Durchschnittsverzinsung des HTM-Buchs als konstante Reihe. `VG1/VG2 HTM Index` im Dropdown tun genau das (0,036 % bzw. 2,3 % p.a.); gebraucht wird der für Ihr Buch passende Satz |
+| **Mikrofinanz** | Es gibt gar keine Reihe. `LET1TREU` (EA Tsy 1–3y) ist nur ein Platzhalter mit ähnlicher Schwankungsbreite. Die Spalte `Mikrofinanz` der Excel-Datei war eine **exakte Kopie genau dieser Reihe**. | am ehesten der NAV eines Mikrofinanzfonds über Bloomberg, siehe unten |
+
+### Mikrofinanz über Bloomberg
+
+Einen *Index* gibt es praktisch nicht: der **SMX-MIV Debt EUR** von Symbiotics
+wäre genau das Richtige (monatliche NAV-Reihe eines Korbs von
+Mikrofinanzfonds, seit 2004, in EUR), er wird aber über syminvest.com bzw.
+Tameo veröffentlicht und ist nach allem, was öffentlich auffindbar ist, **nicht
+über einen Bloomberg-Ticker abrufbar**. Dafür müsste man Symbiotics/Tameo
+direkt anschreiben.
+
+Praktikabel ist deshalb der **NAV eines Fonds**, den Bloomberg über die ISIN
+führt. Kandidaten mit EUR-Tranche:
+
+| Fonds | ISIN | Bemerkung |
+|---|---|---|
+| **Dual Return – Vision Microfinance** (I-AM, Wien) | `LU0563441954` (I, EUR) · `LU0563441798` (R, EUR) | österreichischer Manager, seit 2006, monatlicher NAV |
+| **IIV Mikrofinanzfonds** (Invest in Visions) | `DE000A1H44S3` (I) · `DE000A1H44T1` (R) | seit 2011, in DACH weit verbreitet |
+
+In Bloomberg laden: ISIN eintippen, mit `<GO>` die Fondsseite öffnen, dann den
+Ticker aus der Kopfzeile übernehmen (Form `XXXXXXX LX Equity` bzw.
+`XXXXXXX GR Equity`). Für die Abfrage dasselbe Feld wie bei den übrigen Reihen
+verwenden – `DAY_TO_DAY_TOT_RETURN_GROSS_DVDS`, Periodizität `cm`.
+
+Zwei Dinge dabei beachten:
+
+* **Tranche prüfen.** Jede Anteilsklasse hat einen eigenen Ticker und eine
+  eigene Kostenbelastung. Die Nettoreihe einer R-Tranche enthält bereits
+  Gebühren, die im Tool über die TER ein zweites Mal abgezogen würden.
+* **Währung prüfen.** Es gibt USD- und CHF-Tranchen derselben Fonds; für dieses
+  Tool wird die EUR-Tranche gebraucht.
+
+Die Historie reicht damit bis 2006 bzw. 2011 zurück – kürzer als die übrigen
+Reihen, was den Auswertungszeitraum im Modus *Marktindizes* entsprechend
+begrenzt. Das Tool weist unter "Was den Zeitraum begrenzt" darauf hin.
+| **Anleihen HTM** | Hier ist das Problem grundsätzlich: HTM wird zu fortgeführten Anschaffungskosten bewertet. Ein Marktindex zeigt eine Schwankung, die in der Bilanz nie auftritt – er **überzeichnet** das Risiko, so wie der Geldmarktsatz es unterzeichnet. | die Durchschnittsverzinsung des Buchs. Dafür gibt es jetzt `yield_curves` in der Konfiguration: eine Handvoll Stützstellen genügt, auch wenn sich der Satz über die Jahre geändert hat. **Siehe `docs/htm-buchrendite.md`** |
 
 Für `Immobilien` und `Alternative Investments` ist der Fall mit `CPBRLET` und
 `NEIXCTA` erst einmal gelöst. Falls Sie bessere Reihen haben – ein offener

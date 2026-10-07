@@ -42,6 +42,48 @@
     ]
   },
 
+  "yield_curves": {
+    "HTM Buchrendite (Beispiel)": {
+      "label": "HTM-Buch, Durchschnittsverzinsung - BEISPIELWERTE, bitte ersetzen",
+      "comment": [
+        "Für ein HTM-Buch ist die Rendite kein Marktpreis, sondern eine",
+        "Verzinsung: der Bestand wird zu fortgeführten Anschaffungskosten",
+        "bewertet. Was sich über die Jahre ändert, ist die",
+        "Durchschnittsverzinsung des Buchs, weil alte Hochkuponanleihen",
+        "auslaufen und zu aktuellen Sätzen ersetzt werden.",
+        "",
+        "'schedule' bildet genau diesen Pfad ab: jeder Eintrag gilt ab dem",
+        "angegebenen Monat bis zum nächsten Eintrag, der letzte bis zum Ende",
+        "der Daten. Vor dem ersten Eintrag gibt es keine Werte.",
+        "",
+        "interpolate = true lässt die Verzinsung zwischen den Stützstellen",
+        "linear wandern statt zu springen - näher an einem rollierenden Buch.",
+        "Mit false entstehen Stufen.",
+        "",
+        "compounding = 'geometric' bedeutet (1+rate)^(1/12)-1, zwölf Monate",
+        "ergeben also exakt die angegebene Jahresverzinsung. 'simple' rechnet",
+        "rate/12, wie es die Euribor-Reihen der Excel-Datei tun.",
+        "",
+        "DIE WERTE UNTEN SIND PLATZHALTER. Bitte durch die tatsächliche",
+        "Durchschnittsverzinsung des Buchs ersetzen und den Schlüssel in",
+        "'HTM Buchrendite' umbenennen, dann in der Klasse 'Anleihen HTM' als",
+        "'benchmark' eintragen."
+      ],
+      "interpolate": true,
+      "compounding": "geometric",
+      "schedule": [
+        { "from": "1998-07", "rate_pa": 0.050 },
+        { "from": "2003-01", "rate_pa": 0.045 },
+        { "from": "2008-01", "rate_pa": 0.040 },
+        { "from": "2012-01", "rate_pa": 0.032 },
+        { "from": "2016-01", "rate_pa": 0.024 },
+        { "from": "2020-01", "rate_pa": 0.018 },
+        { "from": "2023-01", "rate_pa": 0.022 },
+        { "from": "2025-01", "rate_pa": 0.028 }
+      ]
+    }
+  },
+
   "modes": [
     {
       "id": "index",
@@ -68,8 +110,8 @@
       "benchmark": "LE13TREU Index",
       "key_rate_spread_bp": 100,
       "index_proxy": true,
-      "index_note": "HTM-Bestände werden zu fortgeführten Anschaffungskosten bewertet. Ein Marktindex zeigt deshalb eine Schwankung, die in der Bilanz gar nicht auftritt - er überzeichnet das Risiko, so wie der Geldmarktsatz es unterzeichnet. EuroAgg 1-3y ist als kurzlaufender Näherungswert gewählt; VG1/VG2 HTM Index im Dropdown bilden stattdessen eine konstante Verzinsung ab.",
-      "alternatives": ["LET1TREU Index", "VG1 HTM Index", "VG2 HTM Index", "LEEGTREU Index", "LBEATREU Index"]
+      "index_note": "HTM-Bestände werden zu fortgeführten Anschaffungskosten bewertet. Ein Marktindex zeigt deshalb eine Schwankung, die in der Bilanz gar nicht auftritt - er überzeichnet das Risiko, so wie der Geldmarktsatz es unterzeichnet. EuroAgg 1-3y ist als kurzlaufender Näherungswert gewählt. Sauber wird es erst mit der tatsächlichen Durchschnittsverzinsung des Buchs: dafür 'HTM Buchrendite' unter 'yield_curves' befüllen und hier als benchmark eintragen.",
+      "alternatives": ["HTM Buchrendite (Beispiel)", "LET1TREU Index", "VG1 HTM Index", "VG2 HTM Index", "LEEGTREU Index", "LBEATREU Index"]
     },
     {
       "name": "Geldmarkt",

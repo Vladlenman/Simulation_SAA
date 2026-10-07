@@ -145,11 +145,16 @@ Der Geldmarktsatz wird exakt aus den Reihen der Excel-Datei zurückgerechnet
 konfigurierbar, nicht nur 100/150/200 bp. `tests/` prüft das gegen die
 Originalreihen.
 
-⚠️ Zwei Klassen haben **auch im Modus `Marktindizes`** keinen echten Benchmark:
-`Mikrofinanz` (es existiert gar keine Reihe) und `Anleihen HTM` (zu
-fortgeführten Anschaffungskosten bewertet, ein Marktindex überzeichnet das
-Risiko). Beide sind mit `PROXY` markiert.
-**`docs/benchmark-mapping.md` sagt, was gebraucht wird.**
+⚠️ Zwei Klassen haben **auch im Modus `Marktindizes`** keinen echten Benchmark
+und sind mit `PROXY` markiert:
+
+* **`Mikrofinanz`** – es existiert keine Reihe. Einen Index gibt es über
+  Bloomberg praktisch nicht; gangbar ist der NAV eines Mikrofinanzfonds über
+  seine ISIN. Kandidaten in `docs/benchmark-mapping.md`.
+* **`Anleihen HTM`** – zu fortgeführten Anschaffungskosten bewertet, ein
+  Marktindex überzeichnet das Risiko. Dafür gibt es jetzt **`yield_curves`**:
+  die Durchschnittsverzinsung des Buchs als Stützstellen, auch wenn sie sich
+  über die Jahre geändert hat. Siehe **`docs/htm-buchrendite.md`**.
 
 ---
 
@@ -172,7 +177,7 @@ static/app.js               Bedienlogik
 static/charts.js            Diagramme (eigenes SVG, damit offline nutzbar)
 tools/import_excel.py       Neuimport aus einer BM-Tool-Datei
 tests/                      Abgleich gegen die Excel-Werte
-docs/                       Analyse der Excel-Datei, Benchmark-Zuordnung
+docs/                       Excel-Analyse, Benchmarks, HTM-Buchrendite
 ```
 
 Gespeicherte Szenarien sind einzelne JSON-Dateien – versionierbar, per Mail

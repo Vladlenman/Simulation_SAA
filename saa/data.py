@@ -146,6 +146,32 @@ def load_panel(path: Path | None = None) -> ReturnPanel:
 
 
 @dataclass(frozen=True)
+class YieldCurve:
+    """A series built from a book yield that changes over time.
+
+    Held-to-maturity books are carried at amortised cost, so their return is an
+    accrual, not a market price. What moves over the years is the book's
+    average yield, as high-coupon bonds mature and are replaced at current
+    rates. ``schedule`` is that path: each anchor is the yield from that month
+    onwards, and ``interpolate`` makes the yield drift linearly between
+    anchors instead of jumping, which is closer to how a rolling book behaves.
+    """
+
+    name: str
+    label: str
+    schedule: tuple[tuple[str, float], ...]  # (YYYY-MM, yield p.a.)
+    interpolate: bool = False
+    compounding: str = "geometric"
+    until: str | None = None
+
+    def monthly_rate(self, annual: float) -> float:
+        if self.compounding == "simple":
+            return annual / 12.0
+        # Geometric: twelve of these compound to exactly the stated yield.
+        return (1.0 + annual) ** (1.0 / 12.0) - 1.0
+
+
+@dataclass(frozen=True)
 class KeyRateSettings:
     """How to rebuild the pure money-market rate from a spread series.
 
@@ -164,6 +190,7 @@ class BenchmarkConfig:
     risk_free: str
     key_rate: KeyRateSettings | None
     modes: tuple[dict, ...]
+    yield_curves: tuple[YieldCurve, ...] = ()
 
 
 def load_asset_classes(path: Path | None = None) -> BenchmarkConfig:
@@ -202,12 +229,95 @@ def load_asset_classes(path: Path | None = None) -> BenchmarkConfig:
         else None
     )
 
+    curves = []
+    for name, entry in (raw.get("yield_curves") or {}).items():
+        anchors = tuple(
+            (str(a["from"]), float(a["rate_pa"]))
+            for a in sorted(entry.get("schedule", []), key=lambda a: str(a["from"]))
+        )
+        if not anchors:
+            continue
+        curves.append(
+            YieldCurve(
+                name=name,
+                label=entry.get("label", name),
+                schedule=anchors,
+                interpolate=bool(entry.get("interpolate", False)),
+                compounding=str(entry.get("compounding", "geometric")),
+                until=entry.get("until"),
+            )
+        )
+
     modes = tuple(raw.get("modes") or [{"id": INDEX_MODE, "label": "Marktindizes"}])
     return BenchmarkConfig(
         classes=tuple(classes),
         risk_free=raw.get("risk_free", ""),
         key_rate=key_rate,
         modes=modes,
+        yield_curves=tuple(curves),
+    )
+
+
+def build_yield_series(data: ReturnPanel, curves: list[YieldCurve]) -> ReturnPanel:
+    """Append one column per yield curve: the accrual implied by the schedule."""
+    curves = [c for c in curves if not data.has(c.name)]
+    if not curves:
+        return data
+
+    months = list(data.months)
+    position = {m: i for i, m in enumerate(months)}
+    columns = []
+    catalogue = dict(data.catalogue)
+
+    for curve in curves:
+        series = np.full(len(months), np.nan)
+        anchors = [(m, r) for m, r in curve.schedule if m in position]
+        if not anchors:
+            columns.append(series)
+            continue
+
+        start = position[anchors[0][0]]
+        stop = position.get(curve.until, len(months) - 1) if curve.until else len(months) - 1
+
+        for i in range(start, min(stop, len(months) - 1) + 1):
+            month = months[i]
+            # The last anchor at or before this month, and the next one after.
+            previous = anchors[0]
+            following = None
+            for anchor in anchors:
+                if anchor[0] <= month:
+                    previous = anchor
+                else:
+                    following = anchor
+                    break
+
+            annual = previous[1]
+            if curve.interpolate and following is not None:
+                span = position[following[0]] - position[previous[0]]
+                if span > 0:
+                    step = (i - position[previous[0]]) / span
+                    annual = previous[1] + step * (following[1] - previous[1])
+            series[i] = curve.monthly_rate(annual)
+
+        columns.append(series)
+        known = ~np.isnan(series)
+        catalogue[curve.name] = {
+            "name": curve.name,
+            "description": curve.label,
+            "currency": "EUR",
+            "synthetic": True,
+            "first_month": months[int(np.argmax(known))] if known.any() else None,
+            "last_month": months[len(known) - 1 - int(np.argmax(known[::-1]))]
+            if known.any()
+            else None,
+            "months": int(known.sum()),
+        }
+
+    return ReturnPanel(
+        months=months,
+        tickers=[*data.tickers, *(c.name for c in curves)],
+        values=np.column_stack([data.values, *columns]),
+        catalogue=catalogue,
     )
 
 
@@ -268,14 +378,14 @@ def panel() -> ReturnPanel:
     """The return history, with the synthesised key-rate series included."""
     data = load_panel()
     config = benchmark_config()
-    if config.key_rate is None:
-        return data
-    spreads = [
-        c.key_rate_spread_bp
-        for c in config.classes
-        if c.key_rate_spread_bp is not None
-    ]
-    return build_key_rate_series(data, config.key_rate, spreads)
+    if config.key_rate is not None:
+        spreads = [
+            c.key_rate_spread_bp
+            for c in config.classes
+            if c.key_rate_spread_bp is not None
+        ]
+        data = build_key_rate_series(data, config.key_rate, spreads)
+    return build_yield_series(data, list(config.yield_curves))
 
 
 def asset_classes() -> tuple[tuple[AssetClass, ...], str]:
