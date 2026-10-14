@@ -6,6 +6,8 @@
     "last_month": "2026-03",
     "months": 327,
     "name": "BCEX6T Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "W"
   },
   "BCOMDET Index": {
@@ -15,6 +17,8 @@
     "last_month": "2026-03",
     "months": 299,
     "name": "BCOMDET Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AW"
   },
   "BCOMTR Index": {
@@ -24,6 +28,8 @@
     "last_month": "2026-03",
     "months": 794,
     "name": "BCOMTR Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AK"
   },
   "BEHLTREU Index": {
@@ -33,6 +39,8 @@
     "last_month": "2026-03",
     "months": 260,
     "name": "BEHLTREU Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AG"
   },
   "CPBRLET AV Equity": {
@@ -42,6 +50,8 @@
     "last_month": "2026-03",
     "months": 259,
     "name": "CPBRLET AV Equity",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AM"
   },
   "Convertibles Index EUR": {
@@ -51,6 +61,8 @@
     "last_month": "2026-03",
     "months": 388,
     "name": "Convertibles Index EUR",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "BK"
   },
   "DBDCONIA Index": {
@@ -60,6 +72,8 @@
     "last_month": "2026-03",
     "months": 327,
     "name": "DBDCONIA Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "BI"
   },
   "ECC0TR03 Index": {
@@ -69,6 +83,8 @@
     "last_month": "2026-01",
     "months": 361,
     "name": "ECC0TR03 Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "I"
   },
   "ESTR3MA Index (+ 100BP)": {
@@ -78,6 +94,8 @@
     "last_month": "2026-01",
     "months": 301,
     "name": "ESTR3MA Index (+ 100BP)",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "C"
   },
   "ESTR3MA Index (+ 150BP)": {
@@ -87,6 +105,8 @@
     "last_month": "2026-01",
     "months": 301,
     "name": "ESTR3MA Index (+ 150BP)",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "E"
   },
   "ESTR3MA Index (+ 200BP)": {
@@ -96,6 +116,8 @@
     "last_month": "2026-01",
     "months": 301,
     "name": "ESTR3MA Index (+ 200BP)",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "G"
   },
   "JPEIDHEU Index": {
@@ -105,6 +127,8 @@
     "last_month": "2026-03",
     "months": 339,
     "name": "JPEIDHEU Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AC"
   },
   "LBEATREU Index": {
@@ -114,6 +138,8 @@
     "last_month": "2026-03",
     "months": 333,
     "name": "LBEATREU Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "U"
   },
   "LCEMTRUU Index": {
@@ -123,6 +149,8 @@
     "last_month": "2026-03",
     "months": 213,
     "name": "LCEMTRUU Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AI"
   },
   "LE13TREU Index": {
@@ -132,6 +160,8 @@
     "last_month": "2026-03",
     "months": 333,
     "name": "LE13TREU Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "Y"
   },
   "LECPTREU Index": {
@@ -141,6 +171,8 @@
     "last_month": "2026-03",
     "months": 333,
     "name": "LECPTREU Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AS"
   },
   "LEEGTREU Index": {
@@ -150,6 +182,8 @@
     "last_month": "2026-03",
     "months": 333,
     "name": "LEEGTREU Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AQ"
   },
   "LEGATRUU Index": {
@@ -159,6 +193,8 @@
     "last_month": "2026-03",
     "months": 434,
     "name": "LEGATRUU Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "BC"
   },
   "LET1TREU Index": {
@@ -168,6 +204,8 @@
     "last_month": "2026-03",
     "months": 333,
     "name": "LET1TREU Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "BG"
   },
   "MSDEE15N Index": {
@@ -177,6 +215,8 @@
     "last_month": "2026-03",
     "months": 327,
     "name": "MSDEE15N Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "M"
   },
   "MSDEEEMN Index": {
@@ -186,6 +226,8 @@
     "last_month": "2026-03",
     "months": 303,
     "name": "MSDEEEMN Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AE"
   },
   "MSDEEMUN Index": {
@@ -195,6 +237,8 @@
     "last_month": "2026-03",
     "months": 327,
     "name": "MSDEEMUN Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "O"
   },
   "MSDEWEUN Index": {
@@ -204,6 +248,8 @@
     "last_month": "2026-03",
     "months": 327,
     "name": "MSDEWEUN Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "K"
   },
   "MSDEWIN Index": {
@@ -213,6 +259,8 @@
     "last_month": "2026-03",
     "months": 327,
     "name": "MSDEWIN Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "S"
   },
   "MXWOHEUR Index": {
@@ -222,6 +270,8 @@
     "last_month": "2026-03",
     "months": 303,
     "name": "MXWOHEUR Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AU"
   },
   "Mikrofinanz": {
@@ -231,6 +281,8 @@
     "last_month": "2026-03",
     "months": 333,
     "name": "Mikrofinanz",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "BO"
   },
   "NDDLE15 Index": {
@@ -240,6 +292,8 @@
     "last_month": "2026-04",
     "months": 675,
     "name": "NDDLE15 Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "BM"
   },
   "NDEEWNR Index": {
@@ -249,6 +303,8 @@
     "last_month": "2026-03",
     "months": 303,
     "name": "NDEEWNR Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "Q"
   },
   "NDUEEGF Index": {
@@ -258,6 +314,8 @@
     "last_month": "2026-03",
     "months": 327,
     "name": "NDUEEGF Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AY"
   },
   "NEIXCTA Index": {
@@ -267,6 +325,8 @@
     "last_month": "2026-03",
     "months": 315,
     "name": "NEIXCTA Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "AO"
   },
   "SPGSUETR Index": {
@@ -276,6 +336,8 @@
     "last_month": "2026-03",
     "months": 674,
     "name": "SPGSUETR Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "BE"
   },
   "TReuters Global Hedged": {
@@ -285,6 +347,8 @@
     "last_month": "2017-12",
     "months": 204,
     "name": "TReuters Global Hedged",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "A"
   },
   "VG1 HTM Index": {
@@ -294,6 +358,8 @@
     "last_month": "2026-03",
     "months": 333,
     "name": "VG1 HTM Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "BQ"
   },
   "VG2 HTM Index": {
@@ -303,6 +369,8 @@
     "last_month": "2026-03",
     "months": 333,
     "name": "VG2 HTM Index",
+    "origin": "market",
+    "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "BS"
   }
 }

@@ -112,6 +112,8 @@ def read_timeseries(path: Path) -> tuple[dict[str, dict[str, float]], dict[str, 
         meta = meta_by_name.get(name, {})
         catalogue[name] = {
             "name": name,
+            "origin": "market",
+            "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
             "description": meta.get("description", ""),
             "currency": meta.get("currency", ""),
             "source_column": get_column_letter(col + 1),

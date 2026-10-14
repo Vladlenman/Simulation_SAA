@@ -69,6 +69,7 @@
         "'HTM Buchrendite' umbenennen, dann in der Klasse 'Anleihen HTM' als",
         "'benchmark' eintragen."
       ],
+      "example": true,
       "interpolate": true,
       "compounding": "geometric",
       "schedule": [

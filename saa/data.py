@@ -177,6 +177,7 @@ class YieldCurve:
     interpolate: bool = False
     compounding: str = "geometric"
     until: str | None = None
+    example: bool = False  # placeholder numbers, not a real book yield
 
     def monthly_rate(self, annual: float) -> float:
         if self.compounding == "simple":
@@ -259,6 +260,7 @@ def load_asset_classes(path: Path | None = None) -> BenchmarkConfig:
                 interpolate=bool(entry.get("interpolate", False)),
                 compounding=str(entry.get("compounding", "geometric")),
                 until=entry.get("until"),
+                example=bool(entry.get("example", False)),
             )
         )
 
@@ -320,6 +322,12 @@ def build_yield_series(data: ReturnPanel, curves: list[YieldCurve]) -> ReturnPan
             "description": curve.label,
             "currency": "EUR",
             "synthetic": True,
+            "origin": "example" if curve.example else "schedule",
+            "origin_note": (
+                "Platzhalterzahlen - durch die echte Buchrendite ersetzen"
+                if curve.example
+                else "aus dem hinterlegten Verzinsungspfad berechnet"
+            ),
             "first_month": months[int(np.argmax(known))] if known.any() else None,
             "last_month": months[len(known) - 1 - int(np.argmax(known[::-1]))]
             if known.any()
@@ -369,6 +377,10 @@ def build_key_rate_series(
             ),
             "currency": "EUR",
             "synthetic": True,
+            # Exactly recomputed from the workbook's own spread series, not
+            # invented: the tests pin it to 1e-15 against the original.
+            "origin": "derived",
+            "origin_note": f"exakt aus {settings.base} zurueckgerechnet",
             "first_month": str(months[known][0]) if known.any() else None,
             "last_month": str(months[known][-1]) if known.any() else None,
             "months": int(known.sum()),

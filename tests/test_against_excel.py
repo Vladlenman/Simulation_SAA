@@ -284,6 +284,33 @@ def test_configured_yield_curves_land_in_the_panel() -> None:
         assert np.nanmin(column) >= 0.0, curve.name
 
 
+
+def test_every_series_declares_where_it_came_from() -> None:
+    """No series may be silently invented: each one states its origin.
+
+    market   = extracted from the BM-Tool workbook
+    derived  = exactly recomputed from a market series
+    schedule = built from a configured yield path
+    example  = placeholder numbers, must never be a default benchmark
+    """
+    data = panel()
+    config = benchmark_config()
+    allowed = {"market", "derived", "schedule", "example"}
+
+    for ticker in data.tickers:
+        origin = data.describe(ticker).get("origin")
+        assert origin in allowed, f"{ticker}: unknown origin {origin!r}"
+
+    defaults = {
+        cls.benchmark_for(mode)
+        for cls in config.classes
+        for mode in (INDEX_MODE, KEY_RATE_MODE)
+    }
+    examples = {t for t in data.tickers if data.describe(t).get("origin") == "example"}
+    leaked = defaults & examples
+    assert not leaked, f"example series used as a default benchmark: {leaked}"
+
+
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):

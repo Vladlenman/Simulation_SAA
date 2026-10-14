@@ -91,6 +91,16 @@ function notice(container, text, kind = "") {
 }
 
 /* -------------------------------------------------------------- mode switch -- */
+/* Where a series came from. Marked in the dropdown so market data is never
+   confused with something the tool computed or with a placeholder. */
+const ORIGIN = {
+  market: { tag: "", label: "Marktdaten aus der BM-Tool-Datei" },
+  derived: { tag: "[berechnet] ", label: "exakt aus einer Marktreihe abgeleitet" },
+  schedule: { tag: "[Verzinsung] ", label: "aus einem hinterlegten Verzinsungspfad" },
+  example: { tag: "[BEISPIEL] ", label: "Platzhalterzahlen - bitte ersetzen" },
+};
+const originTag = (origin) => (ORIGIN[origin] || ORIGIN.market).tag;
+
 function modeInfo(id) {
   return state.boot.modes.find((m) => m.id === id) || { id, label: id, hint: "" };
 }
@@ -181,10 +191,21 @@ function renderWeights() {
     auto.value = "";
     auto.textContent = `automatisch · ${current.benchmark}`;
     select.appendChild(auto);
+    const chosen = cls.choices.find(
+      (c) => c.ticker === (state.benchmarks[cls.name] || current.benchmark)
+    );
+    if (chosen && chosen.origin === "example") {
+      const flag = document.createElement("span");
+      flag.className = "proxy-flag";
+      flag.textContent = "BEISPIEL";
+      flag.title = chosen.origin_note || "Platzhalterzahlen - bitte ersetzen.";
+      name.appendChild(flag);
+    }
     for (const choice of cls.choices) {
       const option = document.createElement("option");
       option.value = choice.ticker;
-      option.textContent = `${choice.ticker} · ${choice.label || ""} (ab ${choice.first_month})`;
+      option.textContent =
+        `${originTag(choice.origin)}${choice.ticker} · ${choice.label || ""} (ab ${choice.first_month})`;
       select.appendChild(option);
     }
     select.value = state.benchmarks[cls.name] || "";
@@ -1003,7 +1024,21 @@ async function init() {
   $("#scenario-notes").value = state.notes;
   $("#start").value = state.start;
   $("#end").value = state.end;
-  $("#period-hint").textContent = `Daten vorhanden von ${state.boot.months.first} bis ${state.boot.months.last}.`;
+  const origins = state.boot.benchmarks.reduce((acc, b) => {
+    acc[b.origin || "market"] = (acc[b.origin || "market"] || 0) + 1;
+    return acc;
+  }, {});
+  const newest = state.boot.benchmarks
+    .map((b) => b.last_month)
+    .filter(Boolean)
+    .sort()
+    .at(-1);
+  $("#period-hint").innerHTML =
+    `Daten von ${state.boot.months.first} bis ${state.boot.months.last}, ` +
+    `aktuellste Reihe endet <b>${newest}</b>.<br>` +
+    `${origins.market || 0} Reihen aus der BM-Tool-Datei` +
+    `${origins.derived ? `, ${origins.derived} berechnet` : ""}` +
+    `${origins.example ? `, <b>${origins.example} Beispielreihe</b>` : ""}.`;
   $("#risk-free-label").textContent = `${state.boot.risk_free.ticker}`;
 
   renderModeSwitch();

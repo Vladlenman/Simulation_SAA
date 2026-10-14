@@ -90,6 +90,8 @@ def bootstrap_payload() -> dict:
             "last_month": info.get("last_month"),
             "currency": info.get("currency"),
             "synthetic": bool(info.get("synthetic", False)),
+            "origin": info.get("origin", "market"),
+            "origin_note": info.get("origin_note", ""),
         }
 
     classes = []
@@ -156,6 +158,8 @@ def bootstrap_payload() -> dict:
                         "last_month",
                         "months",
                         "synthetic",
+                        "origin",
+                        "origin_note",
                     )
                 },
             }

@@ -171,20 +171,47 @@ python run.py --help
 
 ---
 
+## Woher die Daten kommen
+
+Das Tool erfindet keine Kursreihen. Jede Reihe sagt im Benchmark-Dropdown und
+in `data/benchmarks.json`, woher sie stammt:
+
+| Herkunft | Anzahl | Was das heißt |
+|---|---|---|
+| **Marktdaten** | 34 | 1:1 aus dem Blatt `timeseries` Ihrer BM-Tool-Datei extrahiert. Unverändert. |
+| `[berechnet]` | 3 | `Geldmarkt`, `Geldmarkt + 100 bp`, `Geldmarkt + 200 bp` – exakt aus Ihrer eigenen Reihe `ESTR3MA (+ 100BP)` zurückgerechnet, Abweichung unter 1e-18. Keine neuen Daten, nur eine Umrechnung. |
+| `[BEISPIEL]` | 1 | `HTM Buchrendite (Beispiel)` – **die einzigen Zahlen, die nicht aus Ihren Daten stammen.** Ein Platzhalter-Verzinsungspfad, damit der Mechanismus sichtbar ist. Wird nirgends als Standard verwendet; ein Test stellt das sicher. Siehe `docs/htm-buchrendite.md`. |
+
+Im Bedienfeld steht unter den Zeitraumfeldern, bis wann die Daten reichen und
+wie sich die Reihen auf diese drei Gruppen verteilen.
+
 ## Daten aktualisieren
 
 `data/monthly_returns.csv` ist die Datengrundlage: Monatsenden als `JJJJ-MM`,
 eine Spalte je Zeitreihe, Renditen als Dezimalzahl.
 
-Nach einer neuen Bloomberg-Abfrage reicht:
+**Alle Reihen auf einmal** – einzeln nachpflegen muss man nichts:
+
+1. In der Excel-Datei die Bloomberg-Abfrage aktualisieren (am Terminal, damit
+   `BB_timeseries` neu zieht).
+2. `BB_timeseries` als Werte nach `timeseries` kopieren – so wie die Datei es
+   bisher schon gehandhabt hat. Dadurch funktioniert die Datei weiterhin auch
+   ohne Terminal.
+3. Datei speichern und einmal laufen lassen:
 
 ```bash
 python tools/import_excel.py pfad/zur/neuen/BM-Tool.xlsx
 ```
 
-Das liest das Blatt `timeseries` (die Hartkopie, kein Terminal nötig) und
-schreibt CSV und Benchmark-Katalog neu. Einzelne Reihen lassen sich auch von
-Hand in die CSV eintragen, siehe `docs/benchmark-mapping.md`.
+Das schreibt `data/monthly_returns.csv` und `data/benchmarks.json` komplett
+neu. Gespeicherte Szenarien und die Konfiguration bleiben unberührt, die
+abgeleiteten Geldmarktreihen werden beim nächsten Start automatisch neu
+gebildet.
+
+Eine **einzelne** Reihe ergänzen oder korrigieren geht auch von Hand: eine
+Spalte in `data/monthly_returns.csv` anlegen, Werte als Dezimalzahl
+(0,0125 für 1,25 %), leere Zelle wo keine Daten. Siehe
+`docs/benchmark-mapping.md`.
 
 ---
 
