@@ -2,6 +2,16 @@
 # SAA-Simulation starten (macOS / Linux). Diese Datei doppelklicken.
 cd "$(dirname "$0")" || exit 1
 
+# =====================================================================
+#  ORDNER VERSCHIEBEN - nur wenn gewuenscht, sonst leer lassen.
+#  Ohne Eintrag liegen die Ordner neben dieser Datei.
+#  Beispiel:  export SAA_PORTFOLIOS_DIR="/Volumes/Team/SAA-Szenarien"
+# =====================================================================
+export SAA_PORTFOLIOS_DIR=""
+export SAA_DATA_DIR=""
+export SAA_CONFIG_DIR=""
+# =====================================================================
+
 echo
 echo "  SAA-Simulation wird gestartet ..."
 echo

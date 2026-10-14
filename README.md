@@ -43,6 +43,45 @@ python run.py
 Unter Windows heißt es meist `py` statt `python`.
 </details>
 
+### Ordner verschieben
+
+Standardmäßig liegt alles neben dem Startprogramm. Drei Ordner lassen sich
+unabhängig voneinander woanders hinlegen – etwa die Szenarien auf ein
+Netzlaufwerk, damit das ganze Team mit denselben arbeitet:
+
+| Ordner | Inhalt | Wann verschieben |
+|---|---|---|
+| `portfolios/` | die gespeicherten Szenarien (eine JSON-Datei je Szenario) | am häufigsten – gemeinsamer Ablageort fürs Team |
+| `data/` | `monthly_returns.csv`, `benchmarks.json` | wenn die Kursreihen zentral gepflegt werden |
+| `config/` | `asset_classes.json` | wenn die Benchmark-Zuordnung zentral gepflegt wird |
+
+**Beim Start per Doppelklick:** die Startdatei mit einem Texteditor öffnen
+(Rechtsklick → *Bearbeiten* bzw. *Öffnen mit*). Ganz oben steht ein Block:
+
+```bat
+set "SAA_PORTFOLIOS_DIR=S:\Team\SAA-Szenarien"
+set "SAA_DATA_DIR="
+set "SAA_CONFIG_DIR="
+```
+
+Nur ausfüllen, was verschoben werden soll; der Rest bleibt leer. Auf dem Mac
+heißt es in `start-macos.command` entsprechend
+`export SAA_PORTFOLIOS_DIR="/Volumes/Team/SAA-Szenarien"`.
+
+**Über die Kommandozeile:**
+
+```bash
+python run.py --portfolios "S:/Team/SAA-Szenarien"
+python run.py --data-dir "S:/Team/SAA-Daten" --config-dir "S:/Team/SAA-Konfiguration"
+```
+
+Beim Start schreibt das Tool die drei tatsächlich verwendeten Pfade ins
+Fenster – dort steht also immer, wo die Dateien gerade liegen.
+
+Zwei Hinweise: der Szenarienordner wird angelegt, falls er noch nicht
+existiert; `data/` und `config/` dagegen müssen die Dateien bereits enthalten,
+sonst bricht der Start mit einer entsprechenden Meldung ab.
+
 ### Wenn etwas klemmt
 
 | Meldung | Was zu tun ist |
@@ -53,6 +92,7 @@ Unter Windows heißt es meist `py` statt `python`.
 | macOS: Datei öffnet sich im Editor statt zu starten | Im Terminal einmal `chmod +x start-macos.command` ausführen. |
 | „Address already in use" | Es läuft schon eine Instanz. Altes Fenster schließen, oder `python run.py --port 8080` verwenden. |
 | Browser öffnet sich nicht von selbst | <http://127.0.0.1:8000/> von Hand im Browser eingeben. |
+| „Kursreihen nicht gefunden" | Der `data/`-Ordner liegt woanders. Mit `--data-dir` darauf zeigen, siehe oben. |
 
 ---
 
@@ -103,6 +143,8 @@ Weitere Schalter:
 ```bash
 python run.py --port 8080
 python run.py --no-browser
+python run.py --portfolios "S:/Team/SAA-Szenarien"
+python run.py --help
 ```
 
 ---
@@ -209,6 +251,7 @@ config/asset_classes.json   Assetklassen, Benchmarks, beide Modi  <- hier anpass
 data/monthly_returns.csv    Monatsrenditen, aus timeseries
 data/benchmarks.json        Katalog: Name, Währung, Historie
 portfolios/*.json           gespeicherte Szenarien, eine Datei je Szenario
+                            (verschiebbar, siehe Schnellstart)
 saa/data.py                 Laden von Zeitreihen und Konfiguration
 saa/metrics.py              Kennzahlen
 saa/portfolio.py            Gewichte -> Renditereihe, Beiträge

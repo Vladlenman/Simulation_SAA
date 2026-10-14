@@ -1,7 +1,9 @@
 """Saved weight scenarios, one JSON file each under ``portfolios/``.
 
 Plain files on purpose: they diff in git, they can be mailed to a colleague,
-and they are readable without the tool.
+and they are readable without the tool. ``SAA_PORTFOLIOS_DIR`` (or
+``run.py --portfolios``) puts them somewhere else - a shared drive, say, so a
+team works from one set of scenarios.
 """
 
 from __future__ import annotations
@@ -11,10 +13,10 @@ import re
 import unicodedata
 from pathlib import Path
 
+from .data import ROOT, directory
 from .portfolio import Scenario
 
-ROOT = Path(__file__).resolve().parent.parent
-PORTFOLIO_DIR = ROOT / "portfolios"
+PORTFOLIO_DIR = directory("SAA_PORTFOLIOS_DIR", ROOT / "portfolios")
 
 _SAFE = re.compile(r"[^a-z0-9]+")
 

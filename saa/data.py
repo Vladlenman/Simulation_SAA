@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
@@ -11,8 +12,21 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
-DATA_DIR = ROOT / "data"
-CONFIG_DIR = ROOT / "config"
+
+
+def directory(variable: str, default: Path) -> Path:
+    """A folder that an environment variable may move elsewhere.
+
+    ``run.py`` sets these from its command-line options before importing the
+    rest of the package, so the three folders the tool reads and writes can sit
+    anywhere - a network share, for instance - without editing any code.
+    """
+    override = os.environ.get(variable, "").strip()
+    return Path(override).expanduser().resolve() if override else default
+
+
+DATA_DIR = directory("SAA_DATA_DIR", ROOT / "data")
+CONFIG_DIR = directory("SAA_CONFIG_DIR", ROOT / "config")
 
 RETURNS_CSV = DATA_DIR / "monthly_returns.csv"
 BENCHMARKS_JSON = DATA_DIR / "benchmarks.json"

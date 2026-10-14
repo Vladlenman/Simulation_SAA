@@ -3,6 +3,17 @@ REM SAA-Simulation starten (Windows). Diese Datei doppelklicken.
 setlocal
 cd /d "%~dp0"
 
+REM ===================================================================
+REM  ORDNER VERSCHIEBEN - nur wenn gewuenscht, sonst leer lassen.
+REM  Ohne Eintrag liegen die Ordner neben dieser Datei.
+REM  Beispiel:  set "SAA_PORTFOLIOS_DIR=S:\Team\SAA-Szenarien"
+REM  Pfade mit Leerzeichen genau so in Anfuehrungszeichen setzen.
+REM ===================================================================
+set "SAA_PORTFOLIOS_DIR="
+set "SAA_DATA_DIR="
+set "SAA_CONFIG_DIR="
+REM ===================================================================
+
 echo.
 echo   SAA-Simulation wird gestartet ...
 echo.
