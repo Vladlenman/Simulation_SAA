@@ -29,10 +29,10 @@ if [ -z "$PY" ]; then
   exit 1
 fi
 
-if ! "$PY" -c "import numpy" >/dev/null 2>&1; then
-  echo "  numpy fehlt, wird installiert ..."
-  "$PY" -m pip install --user numpy
-  if ! "$PY" -c "import numpy" >/dev/null 2>&1; then
+if ! "$PY" -c "import numpy, openpyxl" >/dev/null 2>&1; then
+  echo "  numpy/openpyxl fehlen, werden installiert ..."
+  "$PY" -m pip install --user numpy openpyxl
+  if ! "$PY" -c "import numpy, openpyxl" >/dev/null 2>&1; then
     echo
     echo "  [!] numpy konnte nicht installiert werden."
     echo "      Ohne Internetzugang bitte die IT um 'pip install numpy' bitten."

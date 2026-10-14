@@ -109,7 +109,7 @@ Wenn es trotzdem klemmt:
 | Meldung | Was zu tun ist |
 |---|---|
 | „Python wurde nicht gefunden" | Python fehlt oder steht nicht im PATH. Neu installieren und „Add Python to PATH" ankreuzen. |
-| „numpy konnte nicht installiert werden" | Firmenrechner ohne Zugang zum Paketserver. Die IT um `pip install numpy` bitten – das ist die einzige Abhängigkeit. |
+| „Pakete konnten nicht installiert werden" | Firmenrechner ohne Zugang zum Paketserver. Die IT um `pip install numpy openpyxl` bitten – mehr braucht das Tool nicht. |
 | macOS: „kann nicht geöffnet werden, da es von einem nicht verifizierten Entwickler stammt" | Rechtsklick auf die Datei → **Öffnen** → im Dialog nochmals **Öffnen**. Nur beim ersten Mal nötig. |
 | macOS: Datei öffnet sich im Editor statt zu starten | Im Terminal einmal `chmod +x start-macos.command` ausführen. |
 | „Address already in use" | Es läuft schon eine Instanz. Altes Fenster schließen, oder `python run.py --port 8080` verwenden. |
@@ -150,13 +150,13 @@ die TAA von VG 3 aus dem Bewegungsmonitor.
 
 ## Installation
 
-Gebraucht werden **Python 3.10+ und numpy**. Mehr nicht – kein Flask, kein
-FastAPI, kein SciPy, keine Chart-Bibliothek, kein Internet. Das ist Absicht:
-das Werkzeug soll auf einem Arbeitsplatzrechner ohne Installationsrechte
-laufen.
+Gebraucht werden **Python 3.10+, numpy und openpyxl**. Mehr nicht – kein
+Flask, kein FastAPI, kein SciPy, keine Chart-Bibliothek, kein Internet. Das
+ist Absicht: das Werkzeug soll auf einem Arbeitsplatzrechner ohne
+Installationsrechte laufen. `openpyxl` liest `data/returns.xlsx`.
 
 ```bash
-pip install numpy          # openpyxl nur für einen Neuimport aus Excel
+pip install numpy openpyxl
 python run.py
 ```
 
@@ -178,40 +178,72 @@ in `data/benchmarks.json`, woher sie stammt:
 
 | Herkunft | Anzahl | Was das heißt |
 |---|---|---|
-| **Marktdaten** | 34 | 1:1 aus dem Blatt `timeseries` Ihrer BM-Tool-Datei extrahiert. Unverändert. |
+| **Marktdaten** | 34 | 1:1 aus dem Blatt `timeseries` Ihrer BM-Tool-Datei extrahiert. Unverändert. Spalten, die Sie selbst anlegen, zählen ebenfalls hierher. |
 | `[berechnet]` | 3 | `Geldmarkt`, `Geldmarkt + 100 bp`, `Geldmarkt + 200 bp` – exakt aus Ihrer eigenen Reihe `ESTR3MA (+ 100BP)` zurückgerechnet, Abweichung unter 1e-18. Keine neuen Daten, nur eine Umrechnung. |
 | `[BEISPIEL]` | 1 | `HTM Buchrendite (Beispiel)` – **die einzigen Zahlen, die nicht aus Ihren Daten stammen.** Ein Platzhalter-Verzinsungspfad, damit der Mechanismus sichtbar ist. Wird nirgends als Standard verwendet; ein Test stellt das sicher. Siehe `docs/htm-buchrendite.md`. |
 
 Im Bedienfeld steht unter den Zeitraumfeldern, bis wann die Daten reichen und
-wie sich die Reihen auf diese drei Gruppen verteilen.
+wie sich die Reihen auf diese drei Gruppen verteilen. Dieselbe Aufstellung
+steht im Blatt `Info` der Renditedatei.
 
 ## Daten aktualisieren
 
-`data/monthly_returns.csv` ist die Datengrundlage: Monatsenden als `JJJJ-MM`,
-eine Spalte je Zeitreihe, Renditen als Dezimalzahl.
+**`data/returns.xlsx` ist die einzige Datenquelle.** Eine Excel-Datei, damit
+sie sich direkt aus dem Bloomberg-Terminal befüllen lässt.
 
-**Alle Reihen auf einmal** – einzeln nachpflegen muss man nichts:
+| Blatt | Inhalt |
+|---|---|
+| `Renditen (in Prozent)` | Zeile 1: `Monat` + je Zeitreihe eine Spalte. Ab Zeile 2 ein Monat je Zeile. |
+| `Info` | Feld `Einheit` (`Prozent` oder `Dezimal`) und eine Herkunftsliste je Reihe. |
 
-1. In der Excel-Datei die Bloomberg-Abfrage aktualisieren (am Terminal, damit
-   `BB_timeseries` neu zieht).
-2. `BB_timeseries` als Werte nach `timeseries` kopieren – so wie die Datei es
-   bisher schon gehandhabt hat. Dadurch funktioniert die Datei weiterhin auch
-   ohne Terminal.
-3. Datei speichern und einmal laufen lassen:
+**Werte stehen in Prozent** – `1,25` bedeutet 1,25 % Monatsrendite. Das ist
+genau das Format, das `DAY_TO_DAY_TOT_RETURN_GROSS_DVDS` liefert, eine
+BDH-Abfrage lässt sich also unverändert hineinkopieren. Wer lieber Dezimalen
+führt, setzt im Blatt `Info` das Feld `Einheit` auf `Dezimal`.
+
+Zum **Komma**: in einer echten Excel-Datei sind Zahlen Zahlen, der
+Dezimaltrenner ist reine Anzeigesache Ihrer Windows-Einstellung. Sie tippen
+`1,25`, Excel speichert 1.25, das Tool liest 1,25 % – da ist nichts
+umzustellen. Falls eine Spalte doch einmal als **Text** ankommt, etwa beim
+Einfügen aus einer Mail, werden auch `1,25`, `1.234,56` und `1,25 %`
+korrekt gelesen.
+
+Das Datum in Spalte A darf ein echtes Datum sein (so liefert es Bloomberg)
+oder Text wie `2024-01` bzw. `2024-01-31`. Leere Zellen heißen „keine Daten
+in diesem Monat". Zeilen ohne erkennbares Datum werden übersprungen, die
+Reihenfolge der Zeilen spielt keine Rolle.
+
+### Eine Zeitreihe ergänzen
+
+Spalte rechts anhängen, in Zeile 1 den Namen eintragen, Werte einfügen,
+speichern, Tool neu starten. Die neue Reihe steht sofort in allen
+Benchmark-Dropdowns. In `config/asset_classes.json` lässt sie sich dann einer
+Assetklasse zuordnen.
+
+### Aus der alten BM-Tool-Datei neu aufsetzen
+
+Falls Sie lieber weiter über das alte Arbeitsblatt gehen:
 
 ```bash
 python tools/import_excel.py pfad/zur/neuen/BM-Tool.xlsx
 ```
 
-Das schreibt `data/monthly_returns.csv` und `data/benchmarks.json` komplett
-neu. Gespeicherte Szenarien und die Konfiguration bleiben unberührt, die
-abgeleiteten Geldmarktreihen werden beim nächsten Start automatisch neu
-gebildet.
+Liest das Blatt `timeseries` und schreibt `data/returns.xlsx` samt
+Herkunftsliste neu. **Überschreibt die Datei vollständig** – von Hand
+ergänzte Spalten gehen dabei verloren, also vorher eine Kopie ziehen.
 
-Eine **einzelne** Reihe ergänzen oder korrigieren geht auch von Hand: eine
-Spalte in `data/monthly_returns.csv` anlegen, Werte als Dezimalzahl
-(0,0125 für 1,25 %), leere Zelle wo keine Daten. Siehe
-`docs/benchmark-mapping.md`.
+### Berechnete Spalten erneuern
+
+`Geldmarkt`, `Geldmarkt + n bp` und die Buchrendite-Reihen stehen als normale
+Spalten in der Datei. Fehlt eine davon, erzeugt das Tool sie beim Start aus
+`config/asset_classes.json`. Nach einer Änderung dort schreibt man sie mit
+
+```bash
+python tools/build_workbook.py
+```
+
+wieder fest in die Datei. Vorhandene Spalten haben immer Vorrang – was in der
+Datei steht, gilt.
 
 ---
 
@@ -297,8 +329,8 @@ start-windows.bat           Start per Doppelklick (Windows)
 start-macos.command         Start per Doppelklick (macOS)
 run.py                      Start über die Kommandozeile
 config/asset_classes.json   Assetklassen, Benchmarks, beide Modi  <- hier anpassen
-data/monthly_returns.csv    Monatsrenditen, aus timeseries
-data/benchmarks.json        Katalog: Name, Währung, Historie
+data/returns.xlsx           ALLE Renditen - die Datei, die Sie pflegen
+data/benchmarks.json        Katalog: Name, Währung, Historie, Herkunft
 portfolios/*.json           gespeicherte Szenarien, eine Datei je Szenario
                             (verschiebbar, siehe Schnellstart)
 saa/data.py                 Laden von Zeitreihen und Konfiguration
@@ -311,6 +343,7 @@ templates/index.html        die Oberfläche
 static/app.js               Bedienlogik
 static/charts.js            Diagramme (eigenes SVG, damit offline nutzbar)
 tools/import_excel.py       Neuimport aus einer BM-Tool-Datei
+tools/build_workbook.py     returns.xlsx neu schreiben
 tests/                      Abgleich gegen die Excel-Werte
 docs/                       Excel-Analyse, Benchmarks, HTM-Buchrendite
 ```

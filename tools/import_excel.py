@@ -6,7 +6,8 @@ Terminal.  Layout of ``timeseries``: column pairs, odd column = observation
 date + series name in row 1, even column = monthly total return in PERCENT.
 
 Writes
-    data/monthly_returns.csv   month (YYYY-MM) x ticker, returns as decimals
+    data/returns.xlsx          one sheet, month x ticker, returns in PERCENT -
+                               this is the file you maintain from Bloomberg
     data/benchmarks.json       catalogue: name, currency, first/last month, n
     data/reference_figures.json  the figures BM-Tool itself reported, for tests
 
@@ -16,7 +17,6 @@ Usage
 
 from __future__ import annotations
 
-import csv
 import datetime as dt
 import json
 import sys
@@ -149,21 +149,25 @@ def read_basicdata(book) -> dict[str, dict]:
     return out
 
 
-def write_csv(series: dict[str, dict[str, float]], path: Path) -> None:
+def write_returns(
+    series: dict[str, dict[str, float]], catalogue: dict[str, dict], path: Path
+) -> Path:
+    """Hand the extract to the workbook writer."""
+    sys.path.insert(0, str(ROOT))
+    from tools.build_workbook import write_workbook
+
     tickers = sorted(series)
     months = sorted({m for obs in series.values() for m in obs})
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.writer(handle)
-        writer.writerow(["month", *tickers])
-        for month in months:
-            writer.writerow(
-                [month]
-                + [
-                    "" if month not in series[t] else repr(series[t][month])
-                    for t in tickers
-                ]
-            )
+    columns = {
+        t: [series[t].get(m, float("nan")) for m in months] for t in tickers
+    }
+    return write_workbook(
+        path,
+        months=months,
+        tickers=tickers,
+        get_column=lambda t: columns[t],
+        describe=lambda t: catalogue.get(t, {}),
+    )
 
 
 def main(argv: list[str]) -> int:
@@ -175,11 +179,9 @@ def main(argv: list[str]) -> int:
         sys.exit(f"workbook not found: {source}")
 
     series, catalogue = read_timeseries(source)
-    write_csv(series, DATA / "monthly_returns.csv")
-    (DATA / "benchmarks.json").write_text(
-        json.dumps(catalogue, indent=2, ensure_ascii=False, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    # write_returns also refreshes benchmarks.json, so the catalogue always
+    # matches the columns actually written.
+    written = write_returns(series, catalogue, DATA / "returns.xlsx")
     (DATA / "reference_figures.json").write_text(
         json.dumps(
             {
@@ -195,7 +197,7 @@ def main(argv: list[str]) -> int:
         encoding="utf-8",
     )
 
-    print(f"{len(series)} series -> {DATA / 'monthly_returns.csv'}")
+    print(f"{len(series)} series -> {written}")
     for name, info in sorted(catalogue.items()):
         print(
             f"  {name:32s} {info['months']:4d} obs  "

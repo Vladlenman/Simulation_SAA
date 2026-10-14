@@ -63,32 +63,40 @@ def main() -> int:
         if value:
             os.environ[variable] = value
 
-    try:
-        import numpy  # noqa: F401
-    except ImportError:
-        print("numpy fehlt. Installieren mit:  pip install numpy", file=sys.stderr)
+    missing = [
+        name
+        for name in ("numpy", "openpyxl")
+        if __import__("importlib.util", fromlist=["util"]).find_spec(name) is None
+    ]
+    if missing:
+        print(
+            f"Fehlende Pakete: {', '.join(missing)}\n"
+            f"Installieren mit:  pip install {' '.join(missing)}",
+            file=sys.stderr,
+        )
         return 1
 
     from saa.app import serve
-    from saa.data import ASSET_CLASSES_JSON, RETURNS_CSV
+    from saa.data import ASSET_CLASSES_JSON, RETURNS_CSV, RETURNS_XLSX
     from saa.store import PORTFOLIO_DIR
 
+    returns = RETURNS_XLSX if RETURNS_XLSX.exists() else RETURNS_CSV
     for label, path in (
-        ("Kursreihen", RETURNS_CSV),
+        ("Renditen", returns),
         ("Konfiguration", ASSET_CLASSES_JSON),
     ):
         if not path.exists():
             print(
                 f"{label} nicht gefunden: {path}\n\n"
                 "Liegt der Ordner woanders? Dann mit --data-dir bzw. --config-dir\n"
-                "darauf zeigen. Fehlt die CSV ganz, einmal aus der Excel-Datei\n"
-                "erzeugen:\n"
+                "darauf zeigen. Fehlt die Renditedatei ganz, einmal aus der\n"
+                "BM-Tool-Datei erzeugen:\n"
                 "    python tools/import_excel.py pfad/zu/BM-Tool.xlsx",
                 file=sys.stderr,
             )
             return 1
 
-    print(f"  Kursreihen   {RETURNS_CSV}")
+    print(f"  Renditen     {returns}")
     print(f"  Konfiguration {ASSET_CLASSES_JSON}")
     print(f"  Szenarien    {PORTFOLIO_DIR}")
     print()

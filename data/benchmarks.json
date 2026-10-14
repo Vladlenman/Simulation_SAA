@@ -120,6 +120,50 @@
     "origin_note": "aus dem Blatt 'timeseries' der BM-Tool-Datei",
     "source_column": "G"
   },
+  "Geldmarkt": {
+    "currency": "EUR",
+    "description": "Geldmarkt (Euribor 3M / €STR)",
+    "first_month": "2001-01",
+    "last_month": "2026-01",
+    "months": 301,
+    "name": "Geldmarkt",
+    "origin": "derived",
+    "origin_note": "exakt aus ESTR3MA Index (+ 100BP) zurueckgerechnet",
+    "synthetic": true
+  },
+  "Geldmarkt + 100 bp": {
+    "currency": "EUR",
+    "description": "Geldmarkt (Euribor 3M / €STR) + 100 bp",
+    "first_month": "2001-01",
+    "last_month": "2026-01",
+    "months": 301,
+    "name": "Geldmarkt + 100 bp",
+    "origin": "derived",
+    "origin_note": "exakt aus ESTR3MA Index (+ 100BP) zurueckgerechnet",
+    "synthetic": true
+  },
+  "Geldmarkt + 200 bp": {
+    "currency": "EUR",
+    "description": "Geldmarkt (Euribor 3M / €STR) + 200 bp",
+    "first_month": "2001-01",
+    "last_month": "2026-01",
+    "months": 301,
+    "name": "Geldmarkt + 200 bp",
+    "origin": "derived",
+    "origin_note": "exakt aus ESTR3MA Index (+ 100BP) zurueckgerechnet",
+    "synthetic": true
+  },
+  "HTM Buchrendite (Beispiel)": {
+    "currency": "EUR",
+    "description": "HTM-Buch, Durchschnittsverzinsung - BEISPIELWERTE, bitte ersetzen",
+    "first_month": "1998-07",
+    "last_month": "2026-04",
+    "months": 334,
+    "name": "HTM Buchrendite (Beispiel)",
+    "origin": "example",
+    "origin_note": "Platzhalterzahlen - durch die echte Buchrendite ersetzen",
+    "synthetic": true
+  },
   "JPEIDHEU Index": {
     "currency": "EUR",
     "description": "J.P. Morgan EMBIG Diversified",

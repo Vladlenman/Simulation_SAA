@@ -28,6 +28,7 @@ def directory(variable: str, default: Path) -> Path:
 DATA_DIR = directory("SAA_DATA_DIR", ROOT / "data")
 CONFIG_DIR = directory("SAA_CONFIG_DIR", ROOT / "config")
 
+RETURNS_XLSX = DATA_DIR / "returns.xlsx"
 RETURNS_CSV = DATA_DIR / "monthly_returns.csv"
 BENCHMARKS_JSON = DATA_DIR / "benchmarks.json"
 ASSET_CLASSES_JSON = CONFIG_DIR / "asset_classes.json"
@@ -122,15 +123,156 @@ class ReturnPanel:
     def describe(self, ticker: str) -> dict:
         info = dict(self.catalogue.get(ticker, {}))
         info.setdefault("name", ticker)
+        # A column added to the workbook by hand carries no catalogue entry;
+        # treat it as what it almost certainly is - data someone pasted in.
+        info.setdefault("origin", "market")
+        info.setdefault("origin_note", "Spalte aus data/returns.xlsx")
         return info
 
 
+RETURN_SHEET_PREFIX = "Renditen"
+INFO_SHEET = "Info"
+
+
+def month_key(value) -> str | None:
+    """Normalise whatever sits in the date column to ``YYYY-MM``.
+
+    Bloomberg hands back real dates, a hand-typed sheet usually holds text.
+    Both are accepted, as is a full ``YYYY-MM-DD``.
+    """
+    if value is None:
+        return None
+    if hasattr(value, "year") and hasattr(value, "month"):
+        return f"{value.year:04d}-{value.month:02d}"
+    text = str(value).strip()
+    if len(text) >= 7 and text[4] in "-/." and text[:4].isdigit():
+        month = text[5:7]
+        if month.isdigit():
+            return f"{text[:4]}-{int(month):02d}"
+    return None
+
+
+def to_number(value) -> float:
+    """A cell as a float, tolerating German-style text like ``1,25 %``."""
+    if value is None:
+        return np.nan
+    if isinstance(value, bool):
+        return np.nan
+    if isinstance(value, (int, float)):
+        return float(value)
+    text = str(value).strip().replace("%", "").replace("\u00a0", "").replace(" ", "")
+    if not text:
+        return np.nan
+    # A German sheet writes 1.234,56; an English one 1,234.56.
+    if "," in text and "." in text:
+        text = (
+            text.replace(".", "").replace(",", ".")
+            if text.rindex(",") > text.rindex(".")
+            else text.replace(",", "")
+        )
+    else:
+        text = text.replace(",", ".")
+    try:
+        return float(text)
+    except ValueError:
+        return np.nan
+
+
+def load_workbook_panel(path: Path) -> ReturnPanel:
+    """Read ``data/returns.xlsx`` - the single source of return data.
+
+    Sheet layout: row 1 holds ``Monat`` plus one column per series, each
+    following row is one month. The ``Info`` sheet's ``Einheit`` cell says
+    whether the numbers are percent (the Bloomberg convention, and the
+    default) or already decimals.
+    """
+    try:
+        import openpyxl
+    except ImportError:  # pragma: no cover
+        raise ImportError(
+            "openpyxl wird zum Lesen von returns.xlsx gebraucht:\n"
+            "    pip install openpyxl"
+        ) from None
+
+    book = openpyxl.load_workbook(path, read_only=True, data_only=True)
+
+    # Percent by default. Dividing by 100 rather than multiplying by 0.01 is
+    # deliberate: 0.01 is not exactly representable, so value * 100 * 0.01 can
+    # drift a bit off value, while value * 100 / 100 round-trips exactly.
+    divisor = 100.0
+    if INFO_SHEET in book.sheetnames:
+        for row in book[INFO_SHEET].iter_rows(values_only=True):
+            if row and str(row[0]).strip().lower() == "einheit":
+                unit = str(row[1] or "").strip().lower()
+                divisor = 1.0 if unit.startswith("dez") else 100.0
+                break
+
+    names = [n for n in book.sheetnames if n.startswith(RETURN_SHEET_PREFIX)]
+    sheet = book[names[0]] if names else book[book.sheetnames[0]]
+
+    rows = sheet.iter_rows(values_only=True)
+    header = next(rows, None)
+    if not header:
+        raise ValueError(f"{path}: das Blatt ist leer.")
+
+    tickers: list[str] = []
+    columns: list[int] = []
+    for index, cell in enumerate(header[1:], start=1):
+        name = "" if cell is None else str(cell).strip()
+        if name and name not in tickers:
+            tickers.append(name)
+            columns.append(index)
+
+    months: list[str] = []
+    values: list[list[float]] = []
+    for row in rows:
+        if not row:
+            continue
+        month = month_key(row[0])
+        if month is None:
+            continue
+        months.append(month)
+        values.append(
+            [
+                to_number(row[c]) / divisor if c < len(row) else np.nan
+                for c in columns
+            ]
+        )
+    book.close()
+
+    if not months:
+        raise ValueError(f"{path}: keine Monatszeilen gefunden.")
+
+    order = sorted(range(len(months)), key=lambda i: months[i])
+    months = [months[i] for i in order]
+    values = [values[i] for i in order]
+
+    catalogue: dict[str, dict] = {}
+    if BENCHMARKS_JSON.exists():
+        catalogue = json.loads(BENCHMARKS_JSON.read_text(encoding="utf-8"))
+
+    return ReturnPanel(
+        months=months,
+        tickers=tickers,
+        values=np.asarray(values, dtype=float),
+        catalogue=catalogue,
+    )
+
+
 def load_panel(path: Path | None = None) -> ReturnPanel:
-    """Read ``data/monthly_returns.csv`` into a ReturnPanel."""
+    """Read the return history: ``data/returns.xlsx``, else the older CSV."""
+    if path is None and RETURNS_XLSX.exists():
+        return load_workbook_panel(RETURNS_XLSX)
+
     path = path or RETURNS_CSV
+    if path.suffix.lower() in (".xlsx", ".xlsm"):
+        return load_workbook_panel(path)
     if not path.exists():
         raise FileNotFoundError(
-            f"{path} is missing - run: python tools/import_excel.py <BM-Tool.xlsx>"
+            f"Keine Renditedaten gefunden.\n"
+            f"  erwartet: {RETURNS_XLSX}\n"
+            f"  oder:     {RETURNS_CSV}\n"
+            f"Erzeugen mit: python tools/build_workbook.py --from <BM-Tool.xlsx>"
         )
 
     with path.open(newline="", encoding="utf-8") as handle:

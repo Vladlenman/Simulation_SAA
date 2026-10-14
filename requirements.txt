@@ -1,6 +1,4 @@
-# The tool runs on the Python standard library plus numpy.
-# No web framework, no SciPy, no chart library, no internet access needed.
+# Das Tool laeuft auf der Standardbibliothek plus diesen beiden Paketen.
+# Kein Webframework, kein SciPy, keine Chart-Bibliothek, kein Internetzugang.
 numpy>=1.24
-
-# Only needed to re-import a new BM-Tool workbook (tools/import_excel.py).
-openpyxl>=3.1
+openpyxl>=3.1   # liest data/returns.xlsx und schreibt es beim Import

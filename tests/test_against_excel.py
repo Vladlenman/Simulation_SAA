@@ -311,6 +311,167 @@ def test_every_series_declares_where_it_came_from() -> None:
     assert not leaked, f"example series used as a default benchmark: {leaked}"
 
 
+
+# --------------------------------------------------------------------------- #
+# the returns workbook
+# --------------------------------------------------------------------------- #
+def _write_sheet(path, rows, unit="Prozent", sheet="Renditen (in Prozent)"):
+    import openpyxl
+
+    book = openpyxl.Workbook()
+    ws = book.active
+    ws.title = sheet
+    for row in rows:
+        ws.append(list(row))
+    info = book.create_sheet("Info")
+    info.append(["Einheit", unit])
+    book.save(path)
+    return path
+
+
+def test_workbook_reads_bloomberg_dates_and_german_decimals(tmp_path=None) -> None:
+    """A BDH pull gives real dates; a hand-typed sheet gives text with commas."""
+    import datetime as dt
+    import tempfile
+
+    from saa.data import load_workbook_panel
+
+    with tempfile.TemporaryDirectory() as folder:
+        path = Path(folder) / "returns.xlsx"
+        _write_sheet(
+            path,
+            [
+                ["Monat", "A Index", "B Index"],
+                [dt.datetime(2024, 1, 31), 1.25, "1,25"],      # date + comma text
+                ["2024-02", "-0,50", -0.50],                   # text month
+                ["2024-03-31", "1.234,56", "1,5 %"],           # German thousands, % sign
+                ["", None, None],                              # ignored
+            ],
+        )
+        panel_ = load_workbook_panel(path)
+
+    assert panel_.months == ["2024-01", "2024-02", "2024-03"]
+    # Percent in the sheet, decimals in the tool.
+    assert abs(panel_.column("A Index")[0] - 0.0125) < 1e-15
+    assert abs(panel_.column("B Index")[0] - 0.0125) < 1e-15
+    assert abs(panel_.column("A Index")[1] - -0.005) < 1e-15
+    assert abs(panel_.column("B Index")[1] - -0.005) < 1e-15
+    assert abs(panel_.column("A Index")[2] - 12.3456) < 1e-12
+    assert abs(panel_.column("B Index")[2] - 0.015) < 1e-15
+
+
+def test_workbook_unit_cell_switches_between_percent_and_decimal() -> None:
+    import tempfile
+
+    from saa.data import load_workbook_panel
+
+    rows = [["Monat", "A Index"], ["2024-01", 1.25]]
+    with tempfile.TemporaryDirectory() as folder:
+        percent = _write_sheet(Path(folder) / "p.xlsx", rows, unit="Prozent")
+        decimal = _write_sheet(Path(folder) / "d.xlsx", rows, unit="Dezimal")
+        assert abs(load_workbook_panel(percent).column("A Index")[0] - 0.0125) < 1e-15
+        assert abs(load_workbook_panel(decimal).column("A Index")[0] - 1.25) < 1e-15
+
+
+def test_workbook_sorts_months_and_skips_blank_rows() -> None:
+    import tempfile
+
+    from saa.data import load_workbook_panel
+
+    with tempfile.TemporaryDirectory() as folder:
+        path = _write_sheet(
+            Path(folder) / "r.xlsx",
+            [
+                ["Monat", "A Index"],
+                ["2024-03", 3.0],
+                [None, 99.0],
+                ["2024-01", 1.0],
+                ["Summe", 42.0],
+                ["2024-02", 2.0],
+            ],
+        )
+        panel_ = load_workbook_panel(path)
+
+    assert panel_.months == ["2024-01", "2024-02", "2024-03"]
+    assert [round(v, 10) for v in panel_.column("A Index")] == [0.01, 0.02, 0.03]
+
+
+def test_workbook_round_trip_is_lossless() -> None:
+    """Rebuilding the shipped workbook must not move a single value.
+
+    Storing percent and reading it back divides by the same 100 it was
+    multiplied by, which round-trips exactly - that is what lets the Excel
+    regression test above keep its 1e-12 tolerance while the data travels
+    through a spreadsheet.
+    """
+    import tempfile
+
+    from saa.data import load_workbook_panel, panel
+    from tools.build_workbook import build
+
+    before = panel()
+    with tempfile.TemporaryDirectory() as folder:
+        after = load_workbook_panel(build(Path(folder) / "returns.xlsx"))
+
+    assert after.months == before.months
+    assert sorted(after.tickers) == sorted(before.tickers)
+    for ticker in before.tickers:
+        a, b = before.column(ticker), after.column(ticker)
+        assert np.array_equal(np.isnan(a), np.isnan(b)), ticker
+        known = ~np.isnan(a)
+        assert np.array_equal(a[known], b[known]), f"{ticker} changed on round trip"
+
+
+def test_freshly_derived_columns_settle_after_one_write() -> None:
+    """A column computed in memory may shift one ulp when first written.
+
+    ``value * 100`` is not always exactly recoverable by ``/ 100``; for the
+    generated money-market series this moves a handful of values by ~1e-18
+    (2e-16 relative). It happens once, on the first materialisation, and every
+    rebuild after that is bit-identical - which is why the shipped workbook is
+    written twice.
+    """
+    import tempfile
+
+    from saa.data import load_workbook_panel
+    from tools.build_workbook import write_workbook
+
+    def rebuild(source, destination):
+        return load_workbook_panel(
+            write_workbook(
+                destination,
+                months=list(source.months),
+                tickers=sorted(source.tickers),
+                get_column=source.column,
+                describe=source.describe,
+            )
+        )
+
+    with tempfile.TemporaryDirectory() as folder:
+        first = rebuild(panel(), Path(folder) / "1.xlsx")
+        second = rebuild(first, Path(folder) / "2.xlsx")
+
+    for ticker in first.tickers:
+        a, b = first.column(ticker), second.column(ticker)
+        known = ~np.isnan(a)
+        assert np.array_equal(a[known], b[known]), f"{ticker} still drifting"
+
+
+def test_hand_added_column_is_treated_as_market_data() -> None:
+    import tempfile
+
+    from saa.data import load_workbook_panel
+
+    with tempfile.TemporaryDirectory() as folder:
+        path = _write_sheet(
+            Path(folder) / "r.xlsx",
+            [["Monat", "Mein Neuer Index"], ["2024-01", 1.0]],
+        )
+        described = load_workbook_panel(path).describe("Mein Neuer Index")
+
+    assert described["origin"] == "market"
+
+
 if __name__ == "__main__":
     for name, fn in sorted(globals().items()):
         if name.startswith("test_") and callable(fn):

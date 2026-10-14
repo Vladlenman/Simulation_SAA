@@ -45,19 +45,19 @@ echo.
 goto fail
 
 :have_python
-REM --- numpy ist die einzige Abhaengigkeit. ---
-%PY% -c "import numpy" >nul 2>&1
+REM --- numpy und openpyxl sind die einzigen Abhaengigkeiten. ---
+%PY% -c "import numpy, openpyxl" >nul 2>&1
 if not errorlevel 1 goto run
 
-echo   numpy fehlt, wird installiert ...
-%PY% -m pip install --user numpy
-%PY% -c "import numpy" >nul 2>&1
+echo   numpy/openpyxl fehlen, werden installiert ...
+%PY% -m pip install --user numpy openpyxl
+%PY% -c "import numpy, openpyxl" >nul 2>&1
 if not errorlevel 1 goto run
 
 echo.
-echo   [!] numpy konnte nicht installiert werden.
+echo   [!] Pakete konnten nicht installiert werden.
 echo       Firmenrechner ohne Internetzugang? Dann bitte die IT um
-echo       "pip install numpy" bitten.
+echo       "pip install numpy openpyxl" bitten.
 echo.
 goto fail
 
@@ -78,6 +78,7 @@ echo       Vermutlich wurde das ZIP nicht entpackt, oder der Ordner liegt
 echo       auf einem Netzlaufwerk, das gerade nicht erreichbar ist.
 echo       Notfalls den Ordner auf die lokale Festplatte kopieren.
 echo.
+popd
 pause
 exit /b 1
 
