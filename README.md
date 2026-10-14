@@ -7,11 +7,52 @@ sofort sehen und **mehrere Gewichtungen nebeneinander vergleichen**.
 Eine HTML-Oberfläche, die auf Python läuft. Keine Bloomberg-Verbindung nötig –
 die Kursreihen sind aus dem Blatt `timeseries` übernommen.
 
-```
+---
+
+## Schnellstart
+
+**1. Herunterladen und entpacken.** Das ZIP irgendwohin entpacken, wo Sie
+Schreibrechte haben – Dokumente oder Desktop genügt. **Wichtig: wirklich
+entpacken**, nicht nur im ZIP hineinklicken; sonst findet Python die Daten
+nicht.
+
+**2. Python installieren**, falls noch nicht vorhanden: <https://www.python.org/downloads/>
+Unter Windows beim Installieren **„Add Python to PATH" ankreuzen**.
+
+**3. Starten** – Datei im entpackten Ordner doppelklicken:
+
+| | Datei |
+|---|---|
+| Windows | `start-windows.bat` |
+| macOS | `start-macos.command` |
+
+Beim ersten Start wird `numpy` nachinstalliert, das dauert einen Moment. Danach
+öffnet sich der Browser auf <http://127.0.0.1:8000/>. Das schwarze Fenster
+bleibt offen, solange das Tool läuft – **zum Beenden einfach schließen** oder
+`Strg+C` drücken.
+
+<details>
+<summary>Lieber von Hand über die Kommandozeile?</summary>
+
+```bash
+cd Pfad/zum/entpackten/Ordner
+pip install numpy
 python run.py
 ```
 
-öffnet <http://127.0.0.1:8000/>.
+Unter Windows heißt es meist `py` statt `python`.
+</details>
+
+### Wenn etwas klemmt
+
+| Meldung | Was zu tun ist |
+|---|---|
+| „Python wurde nicht gefunden" | Python fehlt oder steht nicht im PATH. Neu installieren und „Add Python to PATH" ankreuzen. |
+| „numpy konnte nicht installiert werden" | Firmenrechner ohne Zugang zum Paketserver. Die IT um `pip install numpy` bitten – das ist die einzige Abhängigkeit. |
+| macOS: „kann nicht geöffnet werden, da es von einem nicht verifizierten Entwickler stammt" | Rechtsklick auf die Datei → **Öffnen** → im Dialog nochmals **Öffnen**. Nur beim ersten Mal nötig. |
+| macOS: Datei öffnet sich im Editor statt zu starten | Im Terminal einmal `chmod +x start-macos.command` ausführen. |
+| „Address already in use" | Es läuft schon eine Instanz. Altes Fenster schließen, oder `python run.py --port 8080` verwenden. |
+| Browser öffnet sich nicht von selbst | <http://127.0.0.1:8000/> von Hand im Browser eingeben. |
 
 ---
 
@@ -161,7 +202,9 @@ und sind mit `PROXY` markiert:
 ## Aufbau
 
 ```
-run.py                      Start
+start-windows.bat           Start per Doppelklick (Windows)
+start-macos.command         Start per Doppelklick (macOS)
+run.py                      Start über die Kommandozeile
 config/asset_classes.json   Assetklassen, Benchmarks, beide Modi  <- hier anpassen
 data/monthly_returns.csv    Monatsrenditen, aus timeseries
 data/benchmarks.json        Katalog: Name, Währung, Historie

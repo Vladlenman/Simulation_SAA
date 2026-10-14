@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import math
 import mimetypes
+import sys
 import threading
 import traceback
 from dataclasses import asdict
@@ -422,7 +423,19 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def serve(host: str = "127.0.0.1", port: int = 8000) -> None:
-    httpd = ThreadingHTTPServer((host, port), Handler)
+    try:
+        httpd = ThreadingHTTPServer((host, port), Handler)
+    except OSError as exc:
+        # Most likely the port is taken by an instance that is still running.
+        print(
+            f"\nPort {port} ist belegt ({exc.strerror or exc}).\n"
+            f"Laeuft das Tool schon? Dann das andere Fenster schliessen,\n"
+            f"oder mit einem anderen Port starten:\n"
+            f"    python run.py --port {port + 1}\n",
+            file=sys.stderr,
+        )
+        raise SystemExit(1) from None
+
     print(f"SAA-Tool laeuft auf http://{host}:{port}/  (Strg+C beendet)")
     try:
         httpd.serve_forever()
