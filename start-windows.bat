@@ -1,12 +1,20 @@
 @echo off
 REM SAA-Simulation starten (Windows). Diese Datei doppelklicken.
 setlocal
-cd /d "%~dp0"
+
+REM pushd statt "cd /d": bei einem Netzlaufwerkpfad (\\server\freigabe\...)
+REM kann cmd.exe den Ordner nicht als Arbeitsverzeichnis setzen und landet
+REM stattdessen in C:\Windows. pushd blendet dafuer automatisch einen
+REM temporaeren Laufwerksbuchstaben ein, popd gibt ihn am Ende wieder frei.
+pushd "%~dp0"
+if not exist "run.py" goto no_folder
 
 REM ===================================================================
 REM  ORDNER VERSCHIEBEN - nur wenn gewuenscht, sonst leer lassen.
 REM  Ohne Eintrag liegen die Ordner neben dieser Datei.
 REM  Beispiel:  set "SAA_PORTFOLIOS_DIR=S:\Team\SAA-Szenarien"
+REM  Netzwerkpfade gehen auch:
+REM             set "SAA_PORTFOLIOS_DIR=\\server\freigabe\Szenarien"
 REM  Pfade mit Leerzeichen genau so in Anfuehrungszeichen setzen.
 REM ===================================================================
 set "SAA_PORTFOLIOS_DIR="
@@ -34,8 +42,7 @@ echo.
 echo       Python 3 installieren: https://www.python.org/downloads/
 echo       Beim Installieren "Add Python to PATH" ankreuzen.
 echo.
-pause
-exit /b 1
+goto fail
 
 :have_python
 REM --- numpy ist die einzige Abhaengigkeit. ---
@@ -52,12 +59,29 @@ echo   [!] numpy konnte nicht installiert werden.
 echo       Firmenrechner ohne Internetzugang? Dann bitte die IT um
 echo       "pip install numpy" bitten.
 echo.
-pause
-exit /b 1
+goto fail
 
 :run
 %PY% run.py
 
 echo.
 echo   Beendet. Fenster kann geschlossen werden.
+popd
 pause
+exit /b 0
+
+:no_folder
+echo.
+echo   [!] run.py wurde nicht gefunden.
+echo.
+echo       Vermutlich wurde das ZIP nicht entpackt, oder der Ordner liegt
+echo       auf einem Netzlaufwerk, das gerade nicht erreichbar ist.
+echo       Notfalls den Ordner auf die lokale Festplatte kopieren.
+echo.
+pause
+exit /b 1
+
+:fail
+popd
+pause
+exit /b 1

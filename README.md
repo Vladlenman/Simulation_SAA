@@ -82,6 +82,28 @@ Zwei Hinweise: der Szenarienordner wird angelegt, falls er noch nicht
 existiert; `data/` und `config/` dagegen müssen die Dateien bereits enthalten,
 sonst bricht der Start mit einer entsprechenden Meldung ab.
 
+### Auf einem Netzlaufwerk
+
+Der ganze Ordner darf auf einer Freigabe liegen, auch unter einem UNC-Pfad wie
+`\\server\freigabe\Abteilung\Simulation_SAA`. Dann ist **nichts zu
+konfigurieren** – die drei Ordner liegen ja beieinander und werden relativ zur
+Startdatei gefunden. Einfach `start-windows.bat` doppelklicken.
+
+Ein Detail, das `start-windows.bat` bereits abfängt: **cmd.exe kann einen
+UNC-Pfad nicht als Arbeitsverzeichnis setzen.** Ein Skript mit `cd /d` landet
+dort kommentarlos in `C:\Windows` und findet seine Dateien nicht. Die
+Startdatei verwendet deshalb `pushd`, was für die Laufzeit automatisch einen
+temporären Laufwerksbuchstaben einblendet, und `popd` am Ende.
+
+Wenn es trotzdem klemmt:
+
+| Lage | Abhilfe |
+|---|---|
+| Die Freigabe ist langsam oder bricht ab | Ordner auf die lokale Festplatte kopieren und nur `portfolios/` auf der Freigabe lassen: `set "SAA_PORTFOLIOS_DIR=\\server\freigabe\...\portfolios"` |
+| Gruppenrichtlinie verbietet Skripte von Netzwerkpfaden | Ordner lokal kopieren, oder die Freigabe per `net use S: \\server\freigabe` als Laufwerk einbinden und von dort starten |
+| „Möchten Sie diese Datei wirklich ausführen?" | Normale Windows-Warnung bei Dateien von einem Netzwerkpfad – auf *Ausführen* klicken |
+| Mehrere Personen arbeiten gleichzeitig | Unproblematisch, solange jede/r das Tool auf dem eigenen Rechner startet. Szenarien sind einzelne Dateien; gleichzeitiges Speichern **desselben** Szenarionamens überschreibt sich gegenseitig. |
+
 ### Wenn etwas klemmt
 
 | Meldung | Was zu tun ist |
